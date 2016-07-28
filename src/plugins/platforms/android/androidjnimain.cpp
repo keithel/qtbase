@@ -147,10 +147,10 @@ namespace QtAndroid
         return m_androidPlatformIntegration;
     }
 
-    QWindow *topLevelWindowAt(const QPoint &globalPos)
+    QWindow *topLevelWindowAt(const QPoint &globalPos, int displayId)
     {
         return m_androidPlatformIntegration
-               ? m_androidPlatformIntegration->screen()->topLevelAt(globalPos)
+               ? m_androidPlatformIntegration->screen(displayId)->topLevelAt(globalPos)
                : 0;
     }
 
@@ -635,9 +635,12 @@ static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
         }
     }
 
-    QAndroidPlatformScreen *screen = static_cast<QAndroidPlatformScreen *>(m_androidPlatformIntegration->screen());
-    if (screen->rasterSurfaces())
-        QMetaObject::invokeMethod(screen, "setDirty", Qt::QueuedConnection, Q_ARG(QRect,screen->geometry()));
+    for (const auto& screen : *(m_androidPlatformIntegration->screens()))
+    {
+        QAndroidPlatformScreen *platformScreen = static_cast<QAndroidPlatformScreen *>(screen);
+        if (platformScreen->rasterSurfaces())
+            QMetaObject::invokeMethod(screen, "setDirty", Qt::QueuedConnection, Q_ARG(QRect,platformScreen->geometry()));
+    }
 }
 
 static void updateApplicationState(JNIEnv */*env*/, jobject /*thiz*/, jint state)

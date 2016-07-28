@@ -74,7 +74,7 @@ namespace QtAndroid
     void bringChildToFront(int surfaceId);
     void bringChildToBack(int surfaceId);
 
-    QWindow *topLevelWindowAt(const QPoint &globalPos);
+    QWindow *topLevelWindowAt(const QPoint &globalPos, int displayId);
     int desktopWidthPixels();
     int desktopHeightPixels();
     double scaledDensity();

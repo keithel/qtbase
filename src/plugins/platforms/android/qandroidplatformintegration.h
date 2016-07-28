@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef QHash<int, QAndroidPlatformScreen *> QAndroidPlatformScreensType;
+
 class QDesktopWidget;
 class QAndroidPlatformServices;
 class QAndroidSystemLocale;
@@ -81,7 +83,8 @@ public:
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const;
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const;
     QAbstractEventDispatcher *createEventDispatcher() const;
-    QAndroidPlatformScreen *screen() { return m_primaryScreen; }
+    QAndroidPlatformScreen *screen(int displayId = 0) { return m_screens.value(displayId); }
+    const QAndroidPlatformScreensType *screens() { return &m_screens; }
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
 
     virtual void setDesktopSize(int width, int height);
@@ -127,7 +130,7 @@ private:
     EGLDisplay m_eglDisplay;
     QTouchDevice *m_touchDevice;
 
-    QAndroidPlatformScreen *m_primaryScreen;
+    QAndroidPlatformScreensType m_screens;
 
     QThread *m_mainThread;
 

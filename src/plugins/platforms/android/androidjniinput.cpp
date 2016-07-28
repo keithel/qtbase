@@ -121,13 +121,13 @@ namespace QtAndroidInput
     }
 
 
-    static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
+    static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint displayId, jint x, jint y)
     {
         if (m_ignoreMouseEvents)
             return;
 
         QPoint globalPos(x,y);
-        QWindow *tlw = topLevelWindowAt(globalPos);
+        QWindow *tlw = topLevelWindowAt(globalPos, displayId);
         m_mouseGrabber = tlw;
         QPoint localPos = tlw ? (globalPos - tlw->position()) : globalPos;
         QWindowSystemInterface::handleMouseEvent(tlw,
@@ -136,12 +136,12 @@ namespace QtAndroidInput
                                                  Qt::MouseButtons(Qt::LeftButton));
     }
 
-    static void mouseUp(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
+    static void mouseUp(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint displayId, jint x, jint y)
     {
         QPoint globalPos(x,y);
         QWindow *tlw = m_mouseGrabber.data();
         if (!tlw)
-            tlw = topLevelWindowAt(globalPos);
+            tlw = topLevelWindowAt(globalPos, displayId);
         QPoint localPos = tlw ? (globalPos -tlw->position()) : globalPos;
         QWindowSystemInterface::handleMouseEvent(tlw, localPos, globalPos
                                                 , Qt::MouseButtons(Qt::NoButton));
@@ -149,7 +149,7 @@ namespace QtAndroidInput
         m_mouseGrabber = 0;
     }
 
-    static void mouseMove(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
+    static void mouseMove(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint displayId, jint x, jint y)
     {
 
         if (m_ignoreMouseEvents)
@@ -158,7 +158,7 @@ namespace QtAndroidInput
         QPoint globalPos(x,y);
         QWindow *tlw = m_mouseGrabber.data();
         if (!tlw)
-            tlw = topLevelWindowAt(globalPos);
+            tlw = topLevelWindowAt(globalPos, displayId);
         QPoint localPos = tlw ? (globalPos-tlw->position()) : globalPos;
         QWindowSystemInterface::handleMouseEvent(tlw,
                                                  localPos,
@@ -166,7 +166,7 @@ namespace QtAndroidInput
                                                  Qt::MouseButtons(Qt::LeftButton));
     }
 
-    static void longPress(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
+    static void longPress(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint displayId, jint x, jint y)
     {
         //### TODO: add proper API for Qt 5.2
         static bool rightMouseFromLongPress = qEnvironmentVariableIntValue("QT_NECESSITAS_COMPATIBILITY_LONG_PRESS");
@@ -174,7 +174,7 @@ namespace QtAndroidInput
             return;
         m_ignoreMouseEvents = true;
         QPoint globalPos(x,y);
-        QWindow *tlw = topLevelWindowAt(globalPos);
+        QWindow *tlw = topLevelWindowAt(globalPos, displayId);
         QPoint localPos = tlw ? (globalPos-tlw->position()) : globalPos;
 
         // Release left button
@@ -190,12 +190,12 @@ namespace QtAndroidInput
                                                  Qt::MouseButtons(Qt::RightButton));
     }
 
-    static void touchBegin(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/)
+    static void touchBegin(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint /*displayId*/)
     {
         m_touchPoints.clear();
     }
 
-    static void touchAdd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint id, jint action, jboolean /*primary*/, jint x, jint y, jfloat size, jfloat pressure)
+    static void touchAdd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint /*displayId*/, jint id, jint action, jboolean /*primary*/, jint x, jint y, jfloat size, jfloat pressure)
     {
         Qt::TouchPointState state = Qt::TouchPointStationary;
         switch (action) {
@@ -213,6 +213,7 @@ namespace QtAndroidInput
             break;
         }
 
+        // TODO: change desktop width pixels to the ones for this layout/window instead of the initial display
         const int dw = desktopWidthPixels();
         const int dh = desktopHeightPixels();
         QWindowSystemInterface::TouchPoint touchPoint;
@@ -227,7 +228,7 @@ namespace QtAndroidInput
         m_touchPoints.push_back(touchPoint);
     }
 
-    static void touchEnd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint /*action*/)
+    static void touchEnd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint displayId, jint /*action*/)
     {
         if (m_touchPoints.isEmpty())
             return;
@@ -248,7 +249,7 @@ namespace QtAndroidInput
             platformIntegration->setTouchDevice(touchDevice);
         }
 
-        QWindow *window = QtAndroid::topLevelWindowAt(m_touchPoints.at(0).area.center().toPoint());
+        QWindow *window = QtAndroid::topLevelWindowAt(m_touchPoints.at(0).area.center().toPoint(), displayId);
         QWindowSystemInterface::handleTouchEvent(window, touchDevice, m_touchPoints);
     }
 
@@ -257,7 +258,7 @@ namespace QtAndroidInput
     {
         QPointF globalPosF(x, y);
         QPoint globalPos((int)x, (int)y);
-        QWindow *tlw = topLevelWindowAt(globalPos);
+        QWindow *tlw = topLevelWindowAt(globalPos, 0 /* Internal display only*/);
         QPointF localPos = tlw ? (globalPosF - tlw->position()) : globalPosF;
 
         // Galaxy Note with plain Android:
@@ -776,13 +777,13 @@ namespace QtAndroidInput
     }
 
     static JNINativeMethod methods[] = {
-        {"touchBegin","(I)V",(void*)touchBegin},
-        {"touchAdd","(IIIZIIFF)V",(void*)touchAdd},
-        {"touchEnd","(II)V",(void*)touchEnd},
-        {"mouseDown", "(III)V", (void *)mouseDown},
-        {"mouseUp", "(III)V", (void *)mouseUp},
-        {"mouseMove", "(III)V", (void *)mouseMove},
-        {"longPress", "(III)V", (void *)longPress},
+        {"touchBegin","(II)V",(void*)touchBegin},
+        {"touchAdd","(IIIIZIIFF)V",(void*)touchAdd},
+        {"touchEnd","(III)V",(void*)touchEnd},
+        {"mouseDown", "(IIII)V", (void *)mouseDown},
+        {"mouseUp", "(IIII)V", (void *)mouseUp},
+        {"mouseMove", "(IIII)V", (void *)mouseMove},
+        {"longPress", "(IIII)V", (void *)longPress},
         {"tabletEvent", "(IIJIIIFFF)V", (void *)tabletEvent},
         {"keyDown", "(IIIZ)V", (void *)keyDown},
         {"keyUp", "(IIIZ)V", (void *)keyUp},

@@ -72,7 +72,7 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
         m_gestureDetector =
             new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
                 public void onLongPress(MotionEvent event) {
-                    QtNative.longPress(getId(), (int) event.getX(), (int) event.getY());
+                    QtNative.longPress(getId(), getDisplay().getDisplayId(), (int) event.getX(), (int) event.getY());
                 }
             });
         m_gestureDetector.setIsLongpressEnabled(true);
@@ -101,7 +101,7 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        QtNative.sendTouchEvent(event, getId());
+        QtNative.sendTouchEvent(event, getId(), getDisplay().getDisplayId());
         m_gestureDetector.onTouchEvent(event);
         return true;
     }
@@ -109,7 +109,7 @@ public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public boolean onTrackballEvent(MotionEvent event)
     {
-        QtNative.sendTrackballEvent(event, getId());
+        QtNative.sendTrackballEvent(event, getId(), getDisplay().getDisplayId());
         return true;
     }
 }

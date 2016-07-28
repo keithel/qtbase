@@ -381,7 +381,7 @@ public class QtNative
     }
     //@ANDROID-9
 
-    static public void sendTouchEvent(MotionEvent event, int id)
+    static public void sendTouchEvent(MotionEvent event, int id, int displayId)
     {
         int pointerType = 0;
 
@@ -399,9 +399,10 @@ public class QtNative
             tabletEvent(id, event.getDeviceId(), event.getEventTime(), event.getAction(), pointerType,
                 event.getButtonState(), event.getX(), event.getY(), event.getPressure());
         } else {
-            touchBegin(id);
+            touchBegin(id, displayId);
             for (int i = 0; i < event.getPointerCount(); ++i) {
                     touchAdd(id,
+                             displayId,
                              event.getPointerId(i),
                              getAction(i, event),
                              i == 0,
@@ -413,28 +414,28 @@ public class QtNative
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    touchEnd(id, 0);
+                    touchEnd(id, displayId, 0);
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    touchEnd(id, 2);
+                    touchEnd(id, displayId, 2);
                     break;
 
                 default:
-                    touchEnd(id, 1);
+                    touchEnd(id, displayId, 1);
             }
         }
     }
 
-    static public void sendTrackballEvent(MotionEvent event, int id)
+    static public void sendTrackballEvent(MotionEvent event, int id, int displayId)
     {
         switch (event.getAction()) {
             case MotionEvent.ACTION_UP:
-                mouseUp(id, (int) event.getX(), (int) event.getY());
+                mouseUp(id, displayId, (int) event.getX(), (int) event.getY());
                 break;
 
             case MotionEvent.ACTION_DOWN:
-                mouseDown(id, (int) event.getX(), (int) event.getY());
+                mouseDown(id, displayId, (int) event.getX(), (int) event.getY());
                 m_oldx = (int) event.getX();
                 m_oldy = (int) event.getY();
                 break;
@@ -443,7 +444,7 @@ public class QtNative
                 int dx = (int) (event.getX() - m_oldx);
                 int dy = (int) (event.getY() - m_oldy);
                 if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        mouseMove(id, (int) event.getX(), (int) event.getY());
+                        mouseMove(id, displayId, (int) event.getX(), (int) event.getY());
                         m_oldx = (int) event.getX();
                         m_oldy = (int) event.getY();
                 }
@@ -752,13 +753,13 @@ public class QtNative
     // screen methods
 
     // pointer methods
-    public static native void mouseDown(int winId, int x, int y);
-    public static native void mouseUp(int winId, int x, int y);
-    public static native void mouseMove(int winId, int x, int y);
-    public static native void touchBegin(int winId);
-    public static native void touchAdd(int winId, int pointerId, int action, boolean primary, int x, int y, float size, float pressure);
-    public static native void touchEnd(int winId, int action);
-    public static native void longPress(int winId, int x, int y);
+    public static native void mouseDown(int winId, int displayId, int x, int y);
+    public static native void mouseUp(int winId, int displayId, int x, int y);
+    public static native void mouseMove(int winId, int displayId, int x, int y);
+    public static native void touchBegin(int winId, int displayId);
+    public static native void touchAdd(int winId, int displayId, int pointerId, int action, boolean primary, int x, int y, float size, float pressure);
+    public static native void touchEnd(int winId, int displayId, int action);
+    public static native void longPress(int winId, int displayId, int x, int y);
     // pointer methods
 
     // tablet methods

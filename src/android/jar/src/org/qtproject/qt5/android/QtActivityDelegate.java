@@ -50,6 +50,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.Rect;
+import android.hardware.display.DisplayManager;
 import android.net.LocalServerSocket;
 import android.net.LocalSocket;
 import android.os.Build;
@@ -63,6 +64,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Display;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -143,6 +145,8 @@ public class QtActivityDelegate
     private int m_portraitKeyboardHeight = 0;
     private int m_landscapeKeyboardHeight = 0;
     private int m_probeKeyboardHeightDelay = 50; // ms
+    private DisplayManager m_displayManager = null;
+    private DisplayManager.DisplayListener m_displayListener = null;
 
     public void setFullScreen(boolean enterFullScreen)
     {
@@ -894,6 +898,28 @@ public class QtActivityDelegate
             e.printStackTrace();
         }
 
+        m_displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
+        m_displayListener = new DisplayManager.DisplayListener()
+        {
+            // TODO: Tell C++ about added displays...
+            @Override
+            public void onDisplayAdded(int i)
+            {
+                Display display = m_displayManager.getDisplay(i);
+                //display.
+            }
+
+            @Override
+            public void onDisplayRemoved(int i)
+            {
+            }
+
+            @Override
+            public void onDisplayChanged(int i)
+            {
+            }
+        };
+
         m_editText = new QtEditText(m_activity, this);
         m_imm = (InputMethodManager)m_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         m_surfaces =  new HashMap<Integer, QtSurface>();
@@ -988,11 +1014,17 @@ public class QtActivityDelegate
 
     public void onPause()
     {
+        Log.e(QtNative.QtTAG, "activitydelegate.onPause");
         QtNative.setApplicationState(ApplicationInactive);
+
+        m_displayManager.unregisterDisplayListener(m_displayListener);
     }
 
     public void onResume()
     {
+        Log.e(QtNative.QtTAG, "activitydelegate.onResume");
+        m_displayManager.registerDisplayListener(m_displayListener, null);
+
         QtNative.setApplicationState(ApplicationActive);
         if (m_started) {
             QtNative.updateWindow();

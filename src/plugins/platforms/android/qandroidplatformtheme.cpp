@@ -473,6 +473,7 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
             int minimumDistance = qEnvironmentVariableIntValue("QT_ANDROID_MINIMUM_MOUSE_DOUBLE_CLICK_DISTANCE");
             int ret = minimumDistance;
 
+            // FIXME: dotsPerInch is likely to be different on secondary screens... currently no way to set this hint per-screen though.
             QAndroidPlatformIntegration *platformIntegration
                     = static_cast<QAndroidPlatformIntegration *>(QGuiApplicationPrivate::platformIntegration());
             QAndroidPlatformScreen *platformScreen = platformIntegration->screen();
