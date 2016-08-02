@@ -136,12 +136,13 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API)))
         qFatal("Could not bind GL_ES API");
 
-    QAndroidPlatformScreen* initialScreen = new QAndroidPlatformScreen();
+    QAndroidPlatformScreen* initialScreen = new QAndroidPlatformScreen(
+        "INTERNAL",
+        QSize(m_defaultPhysicalSizeWidth, m_defaultPhysicalSizeHeight),
+        QSize(m_defaultScreenWidth, m_defaultScreenHeight),
+        QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
     m_screens.insert(0, initialScreen);
     screenAdded(initialScreen);
-    initialScreen->setPhysicalSize(QSize(m_defaultPhysicalSizeWidth, m_defaultPhysicalSizeHeight));
-    initialScreen->setSize(QSize(m_defaultScreenWidth, m_defaultScreenHeight));
-    initialScreen->setAvailableGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
 
     m_mainThread = QThread::currentThread();
     QtAndroid::setAndroidPlatformIntegration(this);

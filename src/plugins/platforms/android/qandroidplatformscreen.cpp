@@ -85,25 +85,19 @@ private:
 # define PROFILE_SCOPE
 #endif
 
-QAndroidPlatformScreen::QAndroidPlatformScreen():QObject(),QPlatformScreen()
+QAndroidPlatformScreen::QAndroidPlatformScreen()
+    : QObject(),QPlatformScreen()
+    , m_availableGeometry(0, 0, QAndroidPlatformIntegration::m_defaultGeometryWidth, QAndroidPlatformIntegration::m_defaultGeometryHeight)
+    , m_depth(0), m_physicalSize(QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth, QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight)
+    , m_size(QAndroidPlatformIntegration::m_defaultScreenWidth, QAndroidPlatformIntegration::m_defaultScreenHeight)
 {
-    m_availableGeometry = QRect(0, 0, QAndroidPlatformIntegration::m_defaultGeometryWidth, QAndroidPlatformIntegration::m_defaultGeometryHeight);
-    m_size = QSize(QAndroidPlatformIntegration::m_defaultScreenWidth, QAndroidPlatformIntegration::m_defaultScreenHeight);
-    // Raster only apps should set QT_ANDROID_RASTER_IMAGE_DEPTH to 16
-    // is way much faster than 32
-    if (qEnvironmentVariableIntValue("QT_ANDROID_RASTER_IMAGE_DEPTH") == 16) {
-        m_format = QImage::Format_RGB16;
-        m_depth = 16;
-    } else {
-        m_format = QImage::Format_ARGB32_Premultiplied;
-        m_depth = 32;
-    }
-    m_physicalSize.setHeight(QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight);
-    m_physicalSize.setWidth(QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth);
-    m_redrawTimer.setSingleShot(true);
-    m_redrawTimer.setInterval(0);
-    connect(&m_redrawTimer, SIGNAL(timeout()), this, SLOT(doRedraw()));
-    connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QAndroidPlatformScreen::applicationStateChanged);
+    init();
+}
+
+QAndroidPlatformScreen::QAndroidPlatformScreen(const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry)
+    : QObject(), QPlatformScreen(), m_availableGeometry(availableGeometry), m_depth(0), m_physicalSize(physicalSize), m_name(name), m_size(size)
+{
+    init();
 }
 
 QAndroidPlatformScreen::~QAndroidPlatformScreen()
@@ -113,6 +107,28 @@ QAndroidPlatformScreen::~QAndroidPlatformScreen()
         m_surfaceWaitCondition.wakeOne();
         releaseSurface();
     }
+}
+
+void QAndroidPlatformScreen::init()
+{
+    // Initialize depth and format if not done so in constructor
+    if (m_depth == 0)
+    {
+        // Raster only apps should set QT_ANDROID_RASTER_IMAGE_DEPTH to 16
+        // is way much faster than 32
+        if (qEnvironmentVariableIntValue("QT_ANDROID_RASTER_IMAGE_DEPTH") == 16) {
+            m_format = QImage::Format_RGB16;
+            m_depth = 16;
+        } else {
+            m_format = QImage::Format_ARGB32_Premultiplied;
+            m_depth = 32;
+        }
+    }
+
+    m_redrawTimer.setSingleShot(true);
+    m_redrawTimer.setInterval(0);
+    connect(&m_redrawTimer, SIGNAL(timeout()), this, SLOT(doRedraw()));
+    connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QAndroidPlatformScreen::applicationStateChanged);
 }
 
 QWindow *QAndroidPlatformScreen::topWindow() const
