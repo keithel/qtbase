@@ -60,8 +60,8 @@ class QAndroidPlatformScreen: public QObject, public QPlatformScreen, public And
 {
     Q_OBJECT
 public:
-    QAndroidPlatformScreen();
-    QAndroidPlatformScreen(const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry);
+    QAndroidPlatformScreen(int displayId = 0);
+    QAndroidPlatformScreen(const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry, int displayId = 0);
     ~QAndroidPlatformScreen();
 
     QRect geometry() const { return QRect(QPoint(), m_size); }
@@ -74,6 +74,7 @@ public:
     QWindow *topLevelAt(const QPoint & p) const;
 
     QString name() const { return m_name; }
+    int displayId() const { return m_displayId; }
 
     // compositor api
     void addWindow(QAndroidPlatformWindow *window);
@@ -117,6 +118,7 @@ private slots:
 
 private:
     int m_surfaceId = -1;
+    int m_displayId = -1;
     QString m_name;
     QAtomicInt m_rasterSurfaces = 0;
     ANativeWindow* m_nativeSurface = nullptr;

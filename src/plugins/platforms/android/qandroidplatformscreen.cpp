@@ -85,17 +85,18 @@ private:
 # define PROFILE_SCOPE
 #endif
 
-QAndroidPlatformScreen::QAndroidPlatformScreen()
+QAndroidPlatformScreen::QAndroidPlatformScreen(int displayId)
     : QObject(),QPlatformScreen()
     , m_availableGeometry(0, 0, QAndroidPlatformIntegration::m_defaultGeometryWidth, QAndroidPlatformIntegration::m_defaultGeometryHeight)
     , m_depth(0), m_physicalSize(QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth, QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight)
-    , m_size(QAndroidPlatformIntegration::m_defaultScreenWidth, QAndroidPlatformIntegration::m_defaultScreenHeight)
+    , m_displayId(displayId), m_size(QAndroidPlatformIntegration::m_defaultScreenWidth, QAndroidPlatformIntegration::m_defaultScreenHeight)
 {
     init();
 }
 
-QAndroidPlatformScreen::QAndroidPlatformScreen(const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry)
-    : QObject(), QPlatformScreen(), m_availableGeometry(availableGeometry), m_depth(0), m_physicalSize(physicalSize), m_name(name), m_size(size)
+QAndroidPlatformScreen::QAndroidPlatformScreen(const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry, int displayId)
+    : QObject(), QPlatformScreen()
+    , m_availableGeometry(availableGeometry), m_depth(0), m_physicalSize(physicalSize), m_displayId(displayId), m_name(name), m_size(size)
 {
     init();
 }
