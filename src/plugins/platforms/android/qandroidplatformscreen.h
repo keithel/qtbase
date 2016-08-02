@@ -116,7 +116,7 @@ private slots:
     void doRedraw();
 
 private:
-    int m_id = -1;
+    int m_surfaceId = -1;
     QString m_name;
     QAtomicInt m_rasterSurfaces = 0;
     ANativeWindow* m_nativeSurface = nullptr;

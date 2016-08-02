@@ -102,8 +102,8 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(const QString& name, const QSize&
 
 QAndroidPlatformScreen::~QAndroidPlatformScreen()
 {
-    if (m_id != -1) {
-        QtAndroid::destroySurface(m_id);
+    if (m_surfaceId != -1) {
+        QtAndroid::destroySurface(m_surfaceId);
         m_surfaceWaitCondition.wakeOne();
         releaseSurface();
     }
@@ -271,9 +271,9 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
         }
     }
 
-    if (m_id != -1) {
+    if (m_surfaceId != -1) {
         releaseSurface();
-        QtAndroid::setSurfaceGeometry(m_id, rect);
+        QtAndroid::setSurfaceGeometry(m_surfaceId, rect);
     }
 }
 
@@ -284,8 +284,8 @@ void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
 
     if (state <=  Qt::ApplicationHidden) {
         lockSurface();
-        QtAndroid::destroySurface(m_id);
-        m_id = -1;
+        QtAndroid::destroySurface(m_surfaceId);
+        m_surfaceId = -1;
         releaseSurface();
         unlockSurface();
     }
@@ -327,15 +327,15 @@ void QAndroidPlatformScreen::doRedraw()
         }
     }
     if (!hasVisibleRasterWindows) {
-        if (m_id != -1) {
-            QtAndroid::destroySurface(m_id);
-            m_id = -1;
+        if (m_surfaceId != -1) {
+            QtAndroid::destroySurface(m_surfaceId);
+            m_surfaceId = -1;
         }
         return;
     }
     QMutexLocker lock(&m_surfaceMutex);
-    if (m_id == -1 && m_rasterSurfaces) {
-        m_id = QtAndroid::createSurface(this, m_availableGeometry, true, m_depth);
+    if (m_surfaceId == -1 && m_rasterSurfaces) {
+        m_surfaceId = QtAndroid::createSurface(this, m_availableGeometry, true, m_depth);
         AndroidDeadlockProtector protector;
         if (!protector.acquire())
             return;
