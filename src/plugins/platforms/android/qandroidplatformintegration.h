@@ -121,6 +121,8 @@ public:
     static void setDefaultApplicationState(Qt::ApplicationState applicationState) { m_defaultApplicationState = applicationState; }
 
 private:
+    void screenAdded(QAndroidPlatformScreen *screen, bool isPrimary = false);
+
     EGLDisplay m_eglDisplay;
     QTouchDevice *m_touchDevice;
 
@@ -128,12 +130,7 @@ private:
 
     QThread *m_mainThread;
 
-    static int m_defaultGeometryWidth;
-    static int m_defaultGeometryHeight;
-    static int m_defaultPhysicalSizeWidth;
-    static int m_defaultPhysicalSizeHeight;
-    static int m_defaultScreenWidth;
-    static int m_defaultScreenHeight;
+    static QAndroidPlatformScreen *m_defaultScreen;
 
     static Qt::ScreenOrientation m_orientation;
     static Qt::ScreenOrientation m_nativeOrientation;

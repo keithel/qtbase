@@ -85,15 +85,6 @@ private:
 # define PROFILE_SCOPE
 #endif
 
-QAndroidPlatformScreen::QAndroidPlatformScreen(int displayId)
-    : QObject(),QPlatformScreen()
-    , m_availableGeometry(0, 0, QAndroidPlatformIntegration::m_defaultGeometryWidth, QAndroidPlatformIntegration::m_defaultGeometryHeight)
-    , m_depth(0), m_physicalSize(QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth, QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight)
-    , m_displayId(displayId), m_size(QAndroidPlatformIntegration::m_defaultScreenWidth, QAndroidPlatformIntegration::m_defaultScreenHeight)
-{
-    init();
-}
-
 QAndroidPlatformScreen::QAndroidPlatformScreen(const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry, int displayId)
     : QObject(), QPlatformScreen()
     , m_availableGeometry(availableGeometry), m_depth(0), m_physicalSize(physicalSize), m_displayId(displayId), m_name(name), m_size(size)
@@ -128,12 +119,18 @@ void QAndroidPlatformScreen::init()
 
     m_redrawTimer.setSingleShot(true);
     m_redrawTimer.setInterval(0);
+}
+
+void QAndroidPlatformScreen::connectScreen()
+{
     connect(&m_redrawTimer, SIGNAL(timeout()), this, SLOT(doRedraw()));
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QAndroidPlatformScreen::applicationStateChanged);
+    m_connected = true;
 }
 
 QWindow *QAndroidPlatformScreen::topWindow() const
 {
+    Q_ASSERT(m_connected);
     for (QAndroidPlatformWindow *w : m_windowStack) {
         if (w->window()->type() == Qt::Window ||
                 w->window()->type() == Qt::Popup ||
@@ -146,6 +143,7 @@ QWindow *QAndroidPlatformScreen::topWindow() const
 
 QWindow *QAndroidPlatformScreen::topLevelAt(const QPoint &p) const
 {
+    Q_ASSERT(m_connected);
     for (QAndroidPlatformWindow *w : m_windowStack) {
         if (w->geometry().contains(p, false) && w->window()->isVisible())
             return w->window();
@@ -155,6 +153,7 @@ QWindow *QAndroidPlatformScreen::topLevelAt(const QPoint &p) const
 
 void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
 {
+    Q_ASSERT(m_connected);
     if (window->parent() && window->isRaster())
         return;
 
@@ -172,6 +171,7 @@ void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
 {
+    Q_ASSERT(m_connected);
     if (window->parent() && window->isRaster())
         return;
 
@@ -192,6 +192,7 @@ void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
 {
+    Q_ASSERT(m_connected);
     if (window->parent() && window->isRaster())
         return;
 
@@ -209,6 +210,7 @@ void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
 {
+    Q_ASSERT(m_connected);
     if (window->parent() && window->isRaster())
         return;
 
@@ -226,12 +228,14 @@ void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
 
 void QAndroidPlatformScreen::scheduleUpdate()
 {
+    Q_ASSERT(m_connected);
     if (!m_redrawTimer.isActive())
         m_redrawTimer.start();
 }
 
 void QAndroidPlatformScreen::setDirty(const QRect &rect)
 {
+    Q_ASSERT(m_connected);
     QRect intersection = rect.intersected(m_availableGeometry);
     m_dirtyRect |= intersection;
     scheduleUpdate();
@@ -257,29 +261,34 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
     QRect oldGeometry = m_availableGeometry;
 
     m_availableGeometry = rect;
-    QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
-    resizeMaximizedWindows();
 
-    if (oldGeometry.width() == 0 && oldGeometry.height() == 0 && rect.width() > 0 && rect.height() > 0) {
-        QList<QWindow *> windows = QGuiApplication::allWindows();
-        for (int i = 0; i < windows.size(); ++i) {
-            QWindow *w = windows.at(i);
-            if (w->handle()) {
-                QRect geometry = w->handle()->geometry();
-                if (geometry.width() > 0 && geometry.height() > 0)
-                    QWindowSystemInterface::handleExposeEvent(w, QRect(QPoint(0, 0), geometry.size()));
+    if (m_connected)
+    {
+        QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
+        resizeMaximizedWindows();
+
+        if (oldGeometry.width() == 0 && oldGeometry.height() == 0 && rect.width() > 0 && rect.height() > 0) {
+            QList<QWindow *> windows = QGuiApplication::allWindows();
+            for (int i = 0; i < windows.size(); ++i) {
+                QWindow *w = windows.at(i);
+                if (w->handle()) {
+                    QRect geometry = w->handle()->geometry();
+                    if (geometry.width() > 0 && geometry.height() > 0)
+                        QWindowSystemInterface::handleExposeEvent(w, QRect(QPoint(0, 0), geometry.size()));
+                }
             }
         }
-    }
 
-    if (m_surfaceId != -1) {
-        releaseSurface();
-        QtAndroid::setSurfaceGeometry(m_surfaceId, rect);
+        if (m_surfaceId != -1) {
+            releaseSurface();
+            QtAndroid::setSurfaceGeometry(m_surfaceId, rect);
+        }
     }
 }
 
 void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
 {
+    Q_ASSERT(m_connected);
     for (QAndroidPlatformWindow *w : qAsConst(m_windowStack))
         w->applicationStateChanged(state);
 
@@ -294,6 +303,7 @@ void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
 
 void QAndroidPlatformScreen::topWindowChanged(QWindow *w)
 {
+    Q_ASSERT(m_connected);
     QtAndroidMenu::setActiveTopLevelWindow(w);
 
     if (w != 0) {
@@ -310,6 +320,7 @@ int QAndroidPlatformScreen::rasterSurfaces()
 
 void QAndroidPlatformScreen::doRedraw()
 {
+    Q_ASSERT(m_connected);
     PROFILE_SCOPE;
     if (!QtAndroid::activity())
         return;
@@ -428,6 +439,7 @@ Qt::ScreenOrientation QAndroidPlatformScreen::nativeOrientation() const
 
 void QAndroidPlatformScreen::surfaceChanged(JNIEnv *env, jobject surface, int w, int h)
 {
+    Q_ASSERT(m_connected);
     lockSurface();
     if (surface && w > 0  && h > 0) {
         releaseSurface();
@@ -442,6 +454,7 @@ void QAndroidPlatformScreen::surfaceChanged(JNIEnv *env, jobject surface, int w,
 
 void QAndroidPlatformScreen::releaseSurface()
 {
+    Q_ASSERT(m_connected);
     if (m_nativeSurface) {
         ANativeWindow_release(m_nativeSurface);
         m_nativeSurface = 0;

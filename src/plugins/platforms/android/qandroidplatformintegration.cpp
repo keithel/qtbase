@@ -68,12 +68,7 @@
 
 QT_BEGIN_NAMESPACE
 
-int QAndroidPlatformIntegration::m_defaultGeometryWidth = 320;
-int QAndroidPlatformIntegration::m_defaultGeometryHeight = 455;
-int QAndroidPlatformIntegration::m_defaultScreenWidth = 320;
-int QAndroidPlatformIntegration::m_defaultScreenHeight = 455;
-int QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth = 50;
-int QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight = 71;
+QAndroidPlatformScreen *QAndroidPlatformIntegration::m_defaultScreen = new QAndroidPlatformScreen("INTERNAL", QSize(50, 71), QSize(320, 455), QRect(0, 0, 320, 455));
 
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_orientation = Qt::PrimaryOrientation;
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::PrimaryOrientation;
@@ -136,13 +131,8 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API)))
         qFatal("Could not bind GL_ES API");
 
-    QAndroidPlatformScreen* initialScreen = new QAndroidPlatformScreen(
-        "INTERNAL",
-        QSize(m_defaultPhysicalSizeWidth, m_defaultPhysicalSizeHeight),
-        QSize(m_defaultScreenWidth, m_defaultScreenHeight),
-        QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
-    m_screens.insert(0, initialScreen);
-    screenAdded(initialScreen);
+    m_screens.insert(0, m_defaultScreen);
+    screenAdded(m_defaultScreen, true);
 
     m_mainThread = QThread::currentThread();
     QtAndroid::setAndroidPlatformIntegration(this);
@@ -347,12 +337,8 @@ QPlatformTheme *QAndroidPlatformIntegration::createPlatformTheme(const QString &
 
 void QAndroidPlatformIntegration::setDefaultDisplayMetrics(int gw, int gh, int sw, int sh, int screenWidth, int screenHeight)
 {
-    m_defaultGeometryWidth = gw;
-    m_defaultGeometryHeight = gh;
-    m_defaultPhysicalSizeWidth = sw;
-    m_defaultPhysicalSizeHeight = sh;
-    m_defaultScreenWidth = screenWidth;
-    m_defaultScreenHeight = screenHeight;
+    delete m_defaultScreen;
+    m_defaultScreen = new QAndroidPlatformScreen("INTERNAL", QSize(sw, sh), QSize(screenWidth, screenHeight), QRect(0, 0, gw, gh));
 }
 
 void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation currentOrientation,
@@ -388,6 +374,12 @@ void QAndroidPlatformIntegration::setScreenSize(int width, int height)
     QAndroidPlatformScreen* initialScreen = m_screens.value(0);
     if (initialScreen)
         QMetaObject::invokeMethod(initialScreen, "setSize", Qt::AutoConnection, Q_ARG(QSize, QSize(width, height)));
+}
+
+void QAndroidPlatformIntegration::screenAdded(QAndroidPlatformScreen *screen, bool isPrimary)
+{
+    screen->connectScreen();
+    QPlatformIntegration::screenAdded(screen, isPrimary);
 }
 
 QT_END_NAMESPACE

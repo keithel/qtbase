@@ -60,9 +60,10 @@ class QAndroidPlatformScreen: public QObject, public QPlatformScreen, public And
 {
     Q_OBJECT
 public:
-    QAndroidPlatformScreen(int displayId = 0);
     QAndroidPlatformScreen(const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry, int displayId = 0);
     ~QAndroidPlatformScreen();
+
+    void connectScreen();
 
     QRect geometry() const { return QRect(QPoint(), m_size); }
     QRect availableGeometry() const { return m_availableGeometry; }
@@ -117,6 +118,7 @@ private slots:
     void doRedraw();
 
 private:
+    bool m_connected = false;
     int m_surfaceId = -1;
     int m_displayId = -1;
     QString m_name;
