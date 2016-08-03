@@ -60,7 +60,7 @@ class QAndroidPlatformScreen: public QObject, public QPlatformScreen, public And
 {
     Q_OBJECT
 public:
-    QAndroidPlatformScreen(const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry, int displayId = 0);
+    QAndroidPlatformScreen(int displayId, const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry);
     ~QAndroidPlatformScreen();
 
     void connectScreen();

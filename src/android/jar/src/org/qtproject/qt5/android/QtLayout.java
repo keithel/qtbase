@@ -44,6 +44,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -69,10 +70,15 @@ public class QtLayout extends ViewGroup
     @Override
     protected void onSizeChanged (int w, int h, int oldw, int oldh)
     {
+        Display display = getDisplay();
+        if (display == null)
+            return;
+
         DisplayMetrics metrics = new DisplayMetrics();
-        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        QtNative.setApplicationDisplayMetrics(metrics.widthPixels, metrics.heightPixels, w, h,
+        display.getMetrics(metrics);
+        QtNative.setApplicationDisplayMetrics(display.getDisplayId(), metrics.widthPixels, metrics.heightPixels, w, h,
                                               metrics.xdpi, metrics.ydpi, metrics.scaledDensity, metrics.density);
+
         if (m_startApplicationRunnable != null) {
             m_startApplicationRunnable.run();
             m_startApplicationRunnable = null;

@@ -195,8 +195,12 @@ namespace QtAndroidInput
         m_touchPoints.clear();
     }
 
-    static void touchAdd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint /*displayId*/, jint id, jint action, jboolean /*primary*/, jint x, jint y, jfloat size, jfloat pressure)
+    static void touchAdd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint displayId, jint id, jint action, jboolean /*primary*/, jint x, jint y, jfloat size, jfloat pressure)
     {
+        QAndroidPlatformIntegration *platformIntegration = QtAndroid::androidPlatformIntegration();
+        if (!platformIntegration)
+            return;
+
         Qt::TouchPointState state = Qt::TouchPointStationary;
         switch (action) {
         case 0:
@@ -214,8 +218,10 @@ namespace QtAndroidInput
         }
 
         // TODO: change desktop width pixels to the ones for this layout/window instead of the initial display
-        const int dw = desktopWidthPixels();
-        const int dh = desktopHeightPixels();
+        QAndroidPlatformScreen* screen = platformIntegration->screens()->value(displayId);
+        Q_ASSERT(screen != nullptr);
+        const int dw = screen->availableGeometry().width();
+        const int dh = screen->availableGeometry().height();
         QWindowSystemInterface::TouchPoint touchPoint;
         touchPoint.id = id;
         touchPoint.pressure = pressure;

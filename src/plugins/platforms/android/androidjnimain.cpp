@@ -117,8 +117,6 @@ static int m_surfaceId = 1;
 
 static QAndroidPlatformIntegration *m_androidPlatformIntegration = nullptr;
 
-static int m_desktopWidthPixels  = 0;
-static int m_desktopHeightPixels = 0;
 static double m_scaledDensity = 0;
 static double m_density = 1.0;
 
@@ -152,16 +150,6 @@ namespace QtAndroid
         return m_androidPlatformIntegration
                ? m_androidPlatformIntegration->screen(displayId)->topLevelAt(globalPos)
                : 0;
-    }
-
-    int desktopWidthPixels()
-    {
-        return m_desktopWidthPixels;
-    }
-
-    int desktopHeightPixels()
-    {
-        return m_desktopHeightPixels;
     }
 
     double scaledDensity()
@@ -590,7 +578,7 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface,
 }
 
 static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
-                            jint widthPixels, jint heightPixels,
+                            jint displayId, jint widthPixels, jint heightPixels,
                             jint desktopWidthPixels, jint desktopHeightPixels,
                             jdouble xdpi, jdouble ydpi,
                             jdouble scaledDensity, jdouble density)
@@ -601,23 +589,22 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     widthPixels = qMax(widthPixels, desktopWidthPixels);
     heightPixels = qMax(heightPixels, desktopHeightPixels);
 
-    m_desktopWidthPixels = desktopWidthPixels;
-    m_desktopHeightPixels = desktopHeightPixels;
     m_scaledDensity = scaledDensity;
     m_density = density;
 
     if (!m_androidPlatformIntegration) {
-        QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,
+        QAndroidPlatformIntegration::setDefaultDisplayMetrics(displayId,
+                                                              desktopWidthPixels,
                                                               desktopHeightPixels,
                                                               qRound(double(widthPixels)  / xdpi * 25.4),
                                                               qRound(double(heightPixels) / ydpi * 25.4),
                                                               widthPixels,
                                                               heightPixels);
     } else {
-        m_androidPlatformIntegration->setDisplayMetrics(qRound(double(widthPixels)  / xdpi * 25.4),
+        m_androidPlatformIntegration->setDisplayMetrics(displayId, qRound(double(widthPixels)  / xdpi * 25.4),
                                                         qRound(double(heightPixels) / ydpi * 25.4));
-        m_androidPlatformIntegration->setScreenSize(widthPixels, heightPixels);
-        m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
+        m_androidPlatformIntegration->setScreenSize(displayId, widthPixels, heightPixels);
+        m_androidPlatformIntegration->setDesktopSize(displayId, desktopWidthPixels, desktopHeightPixels);
     }
 }
 
@@ -734,7 +721,7 @@ static JNINativeMethod methods[] = {
     {"startQtApplication", "(Ljava/lang/String;Ljava/lang/String;)V", (void *)startQtApplication},
     {"quitQtAndroidPlugin", "()V", (void *)quitQtAndroidPlugin},
     {"terminateQt", "()V", (void *)terminateQt},
-    {"setDisplayMetrics", "(IIIIDDDD)V", (void *)setDisplayMetrics},
+    {"setDisplayMetrics", "(IIIIIDDDD)V", (void *)setDisplayMetrics},
     {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},

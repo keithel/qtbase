@@ -81,14 +81,15 @@ public class QtNative
     public static final String QtTAG = "Qt JAVA"; // string used for Log.x
     private static ArrayList<Runnable> m_lostActions = new ArrayList<Runnable>(); // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
     private static boolean m_started = false;
-    private static int m_displayMetricsScreenWidthPixels = 0;
-    private static int m_displayMetricsScreenHeightPixels = 0;
-    private static int m_displayMetricsDesktopWidthPixels = 0;
-    private static int m_displayMetricsDesktopHeightPixels = 0;
-    private static double m_displayMetricsXDpi = .0;
-    private static double m_displayMetricsYDpi = .0;
-    private static double m_displayMetricsScaledDensity = 1.0;
-    private static double m_displayMetricsDensity = 1.0;
+    private static int m_startingDisplayId = -1;
+    private static int m_startingDisplayMetricsScreenWidthPixels = 0;
+    private static int m_startingDisplayMetricsScreenHeightPixels = 0;
+    private static int m_startingDisplayMetricsDesktopWidthPixels = 0;
+    private static int m_startingDisplayMetricsDesktopHeightPixels = 0;
+    private static double m_startingDisplayMetricsXDpi = .0;
+    private static double m_startingDisplayMetricsYDpi = .0;
+    private static double m_startingDisplayMetricsScaledDensity = 1.0;
+    private static double m_startingDisplayMetricsDensity = 1.0;
     private static int m_oldx, m_oldy;
     private static final int m_moveThreshold = 0;
     private static ClipboardManager m_clipboardManager = null;
@@ -277,14 +278,15 @@ public class QtNative
         boolean res = false;
         synchronized (m_mainActivityMutex) {
             res = startQtAndroidPlugin();
-            setDisplayMetrics(m_displayMetricsScreenWidthPixels,
-                              m_displayMetricsScreenHeightPixels,
-                              m_displayMetricsDesktopWidthPixels,
-                              m_displayMetricsDesktopHeightPixels,
-                              m_displayMetricsXDpi,
-                              m_displayMetricsYDpi,
-                              m_displayMetricsScaledDensity,
-                              m_displayMetricsDensity);
+            setDisplayMetrics(m_startingDisplayId,
+                              m_startingDisplayMetricsScreenWidthPixels,
+                              m_startingDisplayMetricsScreenHeightPixels,
+                              m_startingDisplayMetricsDesktopWidthPixels,
+                              m_startingDisplayMetricsDesktopHeightPixels,
+                              m_startingDisplayMetricsXDpi,
+                              m_startingDisplayMetricsYDpi,
+                              m_startingDisplayMetricsScaledDensity,
+                              m_startingDisplayMetricsDensity);
             if (params.length() > 0 && !params.startsWith("\t"))
                 params = "\t" + params;
             startQtApplication(f.getAbsolutePath() + params, environment);
@@ -293,7 +295,8 @@ public class QtNative
         return res;
     }
 
-    public static void setApplicationDisplayMetrics(int screenWidthPixels,
+    public static void setApplicationDisplayMetrics(int displayId,
+                                                    int screenWidthPixels,
                                                     int screenHeightPixels,
                                                     int desktopWidthPixels,
                                                     int desktopHeightPixels,
@@ -310,7 +313,8 @@ public class QtNative
 
         synchronized (m_mainActivityMutex) {
             if (m_started) {
-                setDisplayMetrics(screenWidthPixels,
+                setDisplayMetrics(displayId,
+                                  screenWidthPixels,
                                   screenHeightPixels,
                                   desktopWidthPixels,
                                   desktopHeightPixels,
@@ -319,14 +323,15 @@ public class QtNative
                                   scaledDensity,
                                   density);
             } else {
-                m_displayMetricsScreenWidthPixels = screenWidthPixels;
-                m_displayMetricsScreenHeightPixels = screenHeightPixels;
-                m_displayMetricsDesktopWidthPixels = desktopWidthPixels;
-                m_displayMetricsDesktopHeightPixels = desktopHeightPixels;
-                m_displayMetricsXDpi = XDpi;
-                m_displayMetricsYDpi = YDpi;
-                m_displayMetricsScaledDensity = scaledDensity;
-                m_displayMetricsDensity = density;
+                m_startingDisplayId = displayId;
+                m_startingDisplayMetricsScreenWidthPixels = screenWidthPixels;
+                m_startingDisplayMetricsScreenHeightPixels = screenHeightPixels;
+                m_startingDisplayMetricsDesktopWidthPixels = desktopWidthPixels;
+                m_startingDisplayMetricsDesktopHeightPixels = desktopHeightPixels;
+                m_startingDisplayMetricsXDpi = XDpi;
+                m_startingDisplayMetricsYDpi = YDpi;
+                m_startingDisplayMetricsScaledDensity = scaledDensity;
+                m_startingDisplayMetricsDensity = density;
             }
         }
     }
@@ -741,7 +746,8 @@ public class QtNative
     }
 
     // screen methods
-    public static native void setDisplayMetrics(int screenWidthPixels,
+    public static native void setDisplayMetrics(int displayId,
+                                                int screenWidthPixels,
                                                 int screenHeightPixels,
                                                 int desktopWidthPixels,
                                                 int desktopHeightPixels,

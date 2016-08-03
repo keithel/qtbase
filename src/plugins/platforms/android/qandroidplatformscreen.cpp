@@ -85,7 +85,7 @@ private:
 # define PROFILE_SCOPE
 #endif
 
-QAndroidPlatformScreen::QAndroidPlatformScreen(const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry, int displayId)
+QAndroidPlatformScreen::QAndroidPlatformScreen(int displayId, const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry)
     : QObject(), QPlatformScreen()
     , m_availableGeometry(availableGeometry), m_depth(0), m_physicalSize(physicalSize), m_displayId(displayId), m_name(name), m_size(size)
 {
