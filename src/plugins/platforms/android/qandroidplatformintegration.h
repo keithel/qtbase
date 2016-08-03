@@ -113,14 +113,8 @@ public:
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
     static void setDefaultDisplayMetrics(int gw, int gh, int sw, int sh, int width, int height);
-    static void setDefaultDesktopSize(int gw, int gh);
     static void setScreenOrientation(Qt::ScreenOrientation currentOrientation,
                                      Qt::ScreenOrientation nativeOrientation);
-
-    static QSize defaultDesktopSize()
-    {
-        return QSize(m_defaultGeometryWidth, m_defaultGeometryHeight);
-    }
 
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }

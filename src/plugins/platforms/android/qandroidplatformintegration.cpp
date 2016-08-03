@@ -355,12 +355,6 @@ void QAndroidPlatformIntegration::setDefaultDisplayMetrics(int gw, int gh, int s
     m_defaultScreenHeight = screenHeight;
 }
 
-void QAndroidPlatformIntegration::setDefaultDesktopSize(int gw, int gh)
-{
-    m_defaultGeometryWidth = gw;
-    m_defaultGeometryHeight = gh;
-}
-
 void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation currentOrientation,
                                                        Qt::ScreenOrientation nativeOrientation)
 {
