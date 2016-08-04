@@ -65,7 +65,6 @@ namespace QtAndroid
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration);
     void setQtThread(QThread *thread);
 
-
     int createSurface(AndroidSurfaceClient * client, const QRect &geometry, bool onTop, int imageDepth);
     int insertNativeView(jobject view, const QRect &geometry);
     void setViewVisibility(jobject view, bool visible);
@@ -75,8 +74,6 @@ namespace QtAndroid
     void bringChildToBack(int surfaceId);
 
     QWindow *topLevelWindowAt(const QPoint &globalPos, int displayId);
-    double scaledDensity();
-    double pixelDensity();
     JavaVM *javaVM();
     AAssetManager *assetManager();
     jclass applicationClass();

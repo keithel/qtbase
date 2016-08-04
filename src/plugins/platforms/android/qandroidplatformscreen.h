@@ -60,7 +60,9 @@ class QAndroidPlatformScreen: public QObject, public QPlatformScreen, public And
 {
     Q_OBJECT
 public:
-    QAndroidPlatformScreen(int displayId, const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry);
+    QAndroidPlatformScreen(int displayId, const QString& name, const QSize& physicalSize,
+                           qreal scaledDensity, qreal density, const QSize& size,
+                           const QRect& availableGeometry);
     ~QAndroidPlatformScreen();
 
     void connectScreen();
@@ -70,6 +72,7 @@ public:
     int depth() const { return m_depth; }
     QImage::Format format() const { return m_format; }
     QSizeF physicalSize() const { return m_physicalSize; }
+    qreal pixelDensity() const { return m_density; }
 
     inline QWindow *topWindow() const;
     QWindow *topLevelAt(const QPoint & p) const;
@@ -89,7 +92,7 @@ public:
 
 public slots:
     void setDirty(const QRect &rect);
-    void setPhysicalSize(const QSize &size);
+    void setPhysicalSize(const QSize &size, double scaledDensity, double density);
     void setAvailableGeometry(const QRect &rect);
     void setSize(const QSize &size);
 
@@ -103,11 +106,12 @@ protected:
     int m_depth;
     QImage::Format m_format;
     QSizeF m_physicalSize;
+    qreal m_scaledDensity;
+    qreal m_density;
 
 private:
     void init();
     QDpi logicalDpi() const;
-    qreal pixelDensity()  const;
     Qt::ScreenOrientation orientation() const;
     Qt::ScreenOrientation nativeOrientation() const;
     void surfaceChanged(JNIEnv *env, jobject surface, int w, int h);

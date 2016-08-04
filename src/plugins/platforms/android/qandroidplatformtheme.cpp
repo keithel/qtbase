@@ -39,6 +39,7 @@
 
 #include "androidjnimain.h"
 #include "androidjnimenu.h"
+#include "qandroidplatformintegration.h"
 #include "qandroidplatformtheme.h"
 #include "qandroidplatformmenubar.h"
 #include "qandroidplatformmenu.h"
@@ -224,7 +225,7 @@ QJsonObject AndroidStyle::loadStyleData()
 
 static std::shared_ptr<AndroidStyle> loadAndroidStyle(QPalette *defaultPalette)
 {
-    double pixelDensity = QHighDpiScaling::isActive() ? QtAndroid::pixelDensity() : 1.0;
+    double pixelDensity = QHighDpiScaling::isActive() ? QAndroidPlatformIntegration::defaultDisplayPixelDensity() : 1.0;
     std::shared_ptr<AndroidStyle> style = std::make_shared<AndroidStyle>();
     style->m_styleData = AndroidStyle::loadStyleData();
     if (style->m_styleData.isEmpty())

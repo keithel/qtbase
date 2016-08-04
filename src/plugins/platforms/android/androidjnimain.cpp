@@ -117,9 +117,6 @@ static int m_surfaceId = 1;
 
 static QAndroidPlatformIntegration *m_androidPlatformIntegration = nullptr;
 
-static double m_scaledDensity = 0;
-static double m_density = 1.0;
-
 static volatile bool m_pauseApplication;
 
 static AndroidAssetsFileEngineHandler *m_androidAssetsFileEngineHandler = nullptr;
@@ -150,16 +147,6 @@ namespace QtAndroid
         return m_androidPlatformIntegration
                ? m_androidPlatformIntegration->screen(displayId)->topLevelAt(globalPos)
                : 0;
-    }
-
-    double scaledDensity()
-    {
-        return m_scaledDensity;
-    }
-
-    double pixelDensity()
-    {
-        return m_density;
     }
 
     JavaVM *javaVM()
@@ -589,9 +576,6 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     widthPixels = qMax(widthPixels, desktopWidthPixels);
     heightPixels = qMax(heightPixels, desktopHeightPixels);
 
-    m_scaledDensity = scaledDensity;
-    m_density = density;
-
     if (!m_androidPlatformIntegration) {
         QAndroidPlatformIntegration::setDefaultDisplayMetrics(displayId,
                                                               desktopWidthPixels,
@@ -599,10 +583,13 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
                                                               qRound(double(widthPixels)  / xdpi * 25.4),
                                                               qRound(double(heightPixels) / ydpi * 25.4),
                                                               widthPixels,
-                                                              heightPixels);
+                                                              heightPixels,
+                                                              (qreal)scaledDensity,
+                                                              (qreal)density);
     } else {
         m_androidPlatformIntegration->setDisplayMetrics(displayId, qRound(double(widthPixels)  / xdpi * 25.4),
-                                                        qRound(double(heightPixels) / ydpi * 25.4));
+                                                        qRound(double(heightPixels) / ydpi * 25.4),
+                                                        (qreal)scaledDensity, (qreal)density);
         m_androidPlatformIntegration->setScreenSize(displayId, widthPixels, heightPixels);
         m_androidPlatformIntegration->setDesktopSize(displayId, desktopWidthPixels, desktopHeightPixels);
     }

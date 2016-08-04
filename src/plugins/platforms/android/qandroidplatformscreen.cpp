@@ -85,9 +85,13 @@ private:
 # define PROFILE_SCOPE
 #endif
 
-QAndroidPlatformScreen::QAndroidPlatformScreen(int displayId, const QString& name, const QSize& physicalSize, const QSize& size, const QRect& availableGeometry)
+QAndroidPlatformScreen::QAndroidPlatformScreen(int displayId, const QString& name, const QSize& physicalSize,
+                                               qreal scaledDensity, qreal density, const QSize& size,
+                                               const QRect& availableGeometry)
     : QObject(), QPlatformScreen()
-    , m_availableGeometry(availableGeometry), m_depth(0), m_physicalSize(physicalSize), m_displayId(displayId), m_name(name), m_size(size)
+    , m_availableGeometry(availableGeometry), m_depth(0), m_physicalSize(physicalSize)
+    , m_scaledDensity(scaledDensity), m_density(density), m_displayId(displayId)
+    , m_name(name), m_size(size)
 {
     init();
 }
@@ -241,9 +245,11 @@ void QAndroidPlatformScreen::setDirty(const QRect &rect)
     scheduleUpdate();
 }
 
-void QAndroidPlatformScreen::setPhysicalSize(const QSize &size)
+void QAndroidPlatformScreen::setPhysicalSize(const QSize &size, double scaledDensity, double density)
 {
     m_physicalSize = size;
+    m_scaledDensity = scaledDensity;
+    m_density = density;
 }
 
 void QAndroidPlatformScreen::setSize(const QSize &size)
@@ -418,13 +424,8 @@ void QAndroidPlatformScreen::doRedraw()
 
 QDpi QAndroidPlatformScreen::logicalDpi() const
 {
-    qreal lDpi = QtAndroid::scaledDensity() * 72;
+    qreal lDpi = m_scaledDensity * 72;
     return QDpi(lDpi, lDpi);
-}
-
-qreal QAndroidPlatformScreen::pixelDensity() const
-{
-    return QtAndroid::pixelDensity();
 }
 
 Qt::ScreenOrientation QAndroidPlatformScreen::orientation() const
