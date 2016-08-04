@@ -577,15 +577,15 @@ static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
     heightPixels = qMax(heightPixels, desktopHeightPixels);
 
     if (!m_androidPlatformIntegration) {
-        QAndroidPlatformIntegration::setDefaultDisplayMetrics(displayId,
-                                                              desktopWidthPixels,
-                                                              desktopHeightPixels,
-                                                              qRound(double(widthPixels)  / xdpi * 25.4),
-                                                              qRound(double(heightPixels) / ydpi * 25.4),
-                                                              widthPixels,
-                                                              heightPixels,
-                                                              (qreal)scaledDensity,
-                                                              (qreal)density);
+        QAndroidPlatformIntegration::createScreen(displayId,
+                                                  desktopWidthPixels,
+                                                  desktopHeightPixels,
+                                                  qRound(double(widthPixels)  / xdpi * 25.4),
+                                                  qRound(double(heightPixels) / ydpi * 25.4),
+                                                  widthPixels,
+                                                  heightPixels,
+                                                  (qreal)scaledDensity,
+                                                  (qreal)density);
     } else {
         m_androidPlatformIntegration->setDisplayMetrics(displayId, qRound(double(widthPixels)  / xdpi * 25.4),
                                                         qRound(double(heightPixels) / ydpi * 25.4),

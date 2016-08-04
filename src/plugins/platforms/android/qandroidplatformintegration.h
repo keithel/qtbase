@@ -40,6 +40,7 @@
 #ifndef QANDROIDPLATFORMINTERATION_H
 #define QANDROIDPLATFORMINTERATION_H
 
+#include <QMap>
 #include <qpa/qplatformintegration.h>
 #include <qpa/qplatformmenu.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -54,7 +55,7 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef QHash<int, QAndroidPlatformScreen *> QAndroidPlatformScreensType;
+typedef QMap<int, QAndroidPlatformScreen *> QAndroidPlatformScreensType;
 
 class QDesktopWidget;
 class QAndroidPlatformServices;
@@ -113,8 +114,8 @@ public:
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
-    static void setDefaultDisplayMetrics(int displayId, int gw, int gh, int sw, int sh, int width, int height,
-                                         qreal scaledDensity, qreal density);
+    static void createScreen(int displayId, int gw, int gh, int sw, int sh, int width, int height,
+                             qreal scaledDensity, qreal density);
     static void setScreenOrientation(Qt::ScreenOrientation currentOrientation,
                                      Qt::ScreenOrientation nativeOrientation);
 
@@ -134,7 +135,7 @@ private:
 
     QThread *m_mainThread;
 
-    static QAndroidPlatformScreen *m_defaultScreen;
+    static QAndroidPlatformScreensType s_screensAtStartup;
 
     static Qt::ScreenOrientation m_orientation;
     static Qt::ScreenOrientation m_nativeOrientation;

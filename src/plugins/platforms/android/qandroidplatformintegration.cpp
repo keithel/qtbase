@@ -68,7 +68,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QAndroidPlatformScreen *QAndroidPlatformIntegration::m_defaultScreen = new QAndroidPlatformScreen(0, "INTERNAL", QSize(50, 71), 0, 1.0, QSize(320, 455), QRect(0, 0, 320, 455));
+QAndroidPlatformScreensType QAndroidPlatformIntegration::s_screensAtStartup({{0, new QAndroidPlatformScreen(0, "INTERNAL", QSize(50, 71), 0, 1.0, QSize(320, 455), QRect(0, 0, 320, 455))}});
 
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_orientation = Qt::PrimaryOrientation;
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::PrimaryOrientation;
@@ -131,8 +131,11 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     if (Q_UNLIKELY(!eglBindAPI(EGL_OPENGL_ES_API)))
         qFatal("Could not bind GL_ES API");
 
-    m_screens.insert(0, m_defaultScreen);
-    screenAdded(m_defaultScreen, true);
+    m_screens = s_screensAtStartup;
+    for (auto screen : m_screens)
+    {
+        screenAdded(screen);
+    }
 
     m_mainThread = QThread::currentThread();
     QtAndroid::setAndroidPlatformIntegration(this);
@@ -335,14 +338,14 @@ QPlatformTheme *QAndroidPlatformIntegration::createPlatformTheme(const QString &
     return 0;
 }
 
-void QAndroidPlatformIntegration::setDefaultDisplayMetrics(int displayId, int gw, int gh, int sw, int sh, int screenWidth, int screenHeight,
-                                                           qreal scaledDensity, qreal density)
+void QAndroidPlatformIntegration::createScreen(int displayId, int gw, int gh, int sw, int sh, int screenWidth, int screenHeight,
+                                               qreal scaledDensity, qreal density)
 {
-    delete m_defaultScreen;
-    m_defaultScreen = new QAndroidPlatformScreen(displayId, "INTERNAL", QSize(sw, sh),
-                                                 scaledDensity, density,
-                                                 QSize(screenWidth, screenHeight),
-                                                 QRect(0, 0, gw, gh));
+    s_screensAtStartup.insert(displayId,
+            new QAndroidPlatformScreen(displayId, "INTERNAL", QSize(sw, sh),
+                                       scaledDensity, density,
+                                       QSize(screenWidth, screenHeight),
+                                       QRect(0, 0, gw, gh)));
 }
 
 void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation currentOrientation,
@@ -354,7 +357,7 @@ void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation cur
 
 qreal QAndroidPlatformIntegration::defaultDisplayPixelDensity()
 {
-    return m_defaultScreen->pixelDensity();
+    s_screensAtStartup.value(0)->pixelDensity();
 }
 
 #ifndef QT_NO_ACCESSIBILITY
