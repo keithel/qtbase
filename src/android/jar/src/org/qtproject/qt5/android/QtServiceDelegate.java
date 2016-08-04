@@ -48,6 +48,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
+import android.hardware.display.DisplayManager;
 import android.net.LocalServerSocket;
 import android.net.LocalSocket;
 import android.os.Build;
@@ -101,6 +102,8 @@ public class QtServiceDelegate
     private String m_mainLib;
     private static String m_environmentVariables = null;
     private static String m_applicationParameters = null;
+    private DisplayManager m_displayManager = null;
+    private DisplayManager.DisplayListener m_displayListener = null;
 
     public boolean loadApplication(Service service, ClassLoader classLoader, Bundle loaderParams)
     {
@@ -114,7 +117,8 @@ public class QtServiceDelegate
         QtNative.setService(m_service, this);
         QtNative.setClassLoader(classLoader);
 
-        QtNative.setApplicationDisplayMetrics(0, 10, 10, 10, 10, 120, 120, 1.0, 1.0);
+        m_displayManager = (DisplayManager)m_service.getSystemService(Context.DISPLAY_SERVICE);
+        QtNative.setApplicationDisplayMetrics(m_displayManager.getDisplay(0), 10, 10);
 
         if (loaderParams.containsKey(STATIC_INIT_CLASSES_KEY)) {
             for (String className: loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY)) {
@@ -167,7 +171,8 @@ public class QtServiceDelegate
             QtNative.startApplication(m_applicationParameters,
                     m_environmentVariables,
                     m_mainLib,
-                    nativeLibraryDir);
+                    nativeLibraryDir,
+                    m_displayManager.getDisplay(0));
             return true;
         } catch (Exception e) {
             e.printStackTrace();

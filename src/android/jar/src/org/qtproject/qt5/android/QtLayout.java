@@ -74,10 +74,7 @@ public class QtLayout extends ViewGroup
         if (display == null)
             return;
 
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getMetrics(metrics);
-        QtNative.setApplicationDisplayMetrics(display.getDisplayId(), metrics.widthPixels, metrics.heightPixels, w, h,
-                                              metrics.xdpi, metrics.ydpi, metrics.scaledDensity, metrics.density);
+        QtNative.setApplicationDisplayMetrics(display, w, h);
 
         if (m_startApplicationRunnable != null) {
             m_startApplicationRunnable.run();

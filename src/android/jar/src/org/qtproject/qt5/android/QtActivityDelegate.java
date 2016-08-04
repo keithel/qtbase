@@ -863,6 +863,8 @@ public class QtActivityDelegate
     {
         m_quitApp = true;
         Runnable startApplication = null;
+        m_displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
+
         if (null == savedInstanceState) {
             startApplication = new Runnable() {
                 @Override
@@ -872,7 +874,8 @@ public class QtActivityDelegate
                         QtNative.startApplication(m_applicationParameters,
                             m_environmentVariables,
                             m_mainLib,
-                            nativeLibraryDir);
+                            nativeLibraryDir,
+                            m_displayManager.getDisplay(0));
                         m_started = true;
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -898,7 +901,6 @@ public class QtActivityDelegate
             e.printStackTrace();
         }
 
-        m_displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
         m_displayListener = new DisplayManager.DisplayListener()
         {
             // TODO: Tell C++ about added displays...

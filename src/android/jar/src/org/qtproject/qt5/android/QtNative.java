@@ -54,8 +54,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.ClipboardManager;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
@@ -81,15 +83,8 @@ public class QtNative
     public static final String QtTAG = "Qt JAVA"; // string used for Log.x
     private static ArrayList<Runnable> m_lostActions = new ArrayList<Runnable>(); // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
     private static boolean m_started = false;
-    private static int m_startingDisplayId = -1;
-    private static int m_startingDisplayMetricsScreenWidthPixels = 0;
-    private static int m_startingDisplayMetricsScreenHeightPixels = 0;
-    private static int m_startingDisplayMetricsDesktopWidthPixels = 0;
-    private static int m_startingDisplayMetricsDesktopHeightPixels = 0;
-    private static double m_startingDisplayMetricsXDpi = .0;
-    private static double m_startingDisplayMetricsYDpi = .0;
-    private static double m_startingDisplayMetricsScaledDensity = 1.0;
-    private static double m_startingDisplayMetricsDensity = 1.0;
+    private static int m_startingDesktopWidth = 0;
+    private static int m_startingDesktopHeight = 0;
     private static int m_oldx, m_oldy;
     private static final int m_moveThreshold = 0;
     private static ClipboardManager m_clipboardManager = null;
@@ -266,7 +261,8 @@ public class QtNative
     public static boolean startApplication(String params,
                                            String environment,
                                            String mainLibrary,
-                                           String nativeLibraryDir) throws Exception
+                                           String nativeLibraryDir,
+                                           Display startingDisplay) throws Exception
     {
         File f = new File(nativeLibraryDir + "lib" + mainLibrary + ".so");
         if (!f.exists())
@@ -278,15 +274,17 @@ public class QtNative
         boolean res = false;
         synchronized (m_mainActivityMutex) {
             res = startQtAndroidPlugin();
-            setDisplayMetrics(m_startingDisplayId,
-                              m_startingDisplayMetricsScreenWidthPixels,
-                              m_startingDisplayMetricsScreenHeightPixels,
-                              m_startingDisplayMetricsDesktopWidthPixels,
-                              m_startingDisplayMetricsDesktopHeightPixels,
-                              m_startingDisplayMetricsXDpi,
-                              m_startingDisplayMetricsYDpi,
-                              m_startingDisplayMetricsScaledDensity,
-                              m_startingDisplayMetricsDensity);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            startingDisplay.getMetrics(displayMetrics);
+            setDisplayMetrics(startingDisplay.getDisplayId(),
+                              displayMetrics.widthPixels,
+                              displayMetrics.heightPixels,
+                              m_startingDesktopWidth,
+                              m_startingDesktopHeight,
+                              displayMetrics.xdpi,
+                              displayMetrics.ydpi,
+                              displayMetrics.scaledDensity,
+                              displayMetrics.density);
             if (params.length() > 0 && !params.startsWith("\t"))
                 params = "\t" + params;
             startQtApplication(f.getAbsolutePath() + params, environment);
@@ -295,43 +293,33 @@ public class QtNative
         return res;
     }
 
-    public static void setApplicationDisplayMetrics(int displayId,
-                                                    int screenWidthPixels,
-                                                    int screenHeightPixels,
+    public static void setApplicationDisplayMetrics(Display display,
                                                     int desktopWidthPixels,
-                                                    int desktopHeightPixels,
-                                                    double XDpi,
-                                                    double YDpi,
-                                                    double scaledDensity,
-                                                    double density)
+                                                    int desktopHeightPixels)
     {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        display.getMetrics(displayMetrics);
+
         /* Fix buggy dpi report */
-        if (XDpi < android.util.DisplayMetrics.DENSITY_LOW)
-            XDpi = android.util.DisplayMetrics.DENSITY_LOW;
-        if (YDpi < android.util.DisplayMetrics.DENSITY_LOW)
-            YDpi = android.util.DisplayMetrics.DENSITY_LOW;
+        if (displayMetrics.xdpi < android.util.DisplayMetrics.DENSITY_LOW)
+            displayMetrics.xdpi = android.util.DisplayMetrics.DENSITY_LOW;
+        if (displayMetrics.ydpi < android.util.DisplayMetrics.DENSITY_LOW)
+            displayMetrics.ydpi = android.util.DisplayMetrics.DENSITY_LOW;
 
         synchronized (m_mainActivityMutex) {
             if (m_started) {
-                setDisplayMetrics(displayId,
-                                  screenWidthPixels,
-                                  screenHeightPixels,
+                setDisplayMetrics(display.getDisplayId(),
+                                  displayMetrics.widthPixels,
+                                  displayMetrics.heightPixels,
                                   desktopWidthPixels,
                                   desktopHeightPixels,
-                                  XDpi,
-                                  YDpi,
-                                  scaledDensity,
-                                  density);
+                                  displayMetrics.xdpi,
+                                  displayMetrics.ydpi,
+                                  displayMetrics.scaledDensity,
+                                  displayMetrics.density);
             } else {
-                m_startingDisplayId = displayId;
-                m_startingDisplayMetricsScreenWidthPixels = screenWidthPixels;
-                m_startingDisplayMetricsScreenHeightPixels = screenHeightPixels;
-                m_startingDisplayMetricsDesktopWidthPixels = desktopWidthPixels;
-                m_startingDisplayMetricsDesktopHeightPixels = desktopHeightPixels;
-                m_startingDisplayMetricsXDpi = XDpi;
-                m_startingDisplayMetricsYDpi = YDpi;
-                m_startingDisplayMetricsScaledDensity = scaledDensity;
-                m_startingDisplayMetricsDensity = density;
+                m_startingDesktopWidth = desktopWidthPixels;
+                m_startingDesktopHeight = desktopHeightPixels;
             }
         }
     }
