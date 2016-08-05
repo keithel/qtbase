@@ -590,15 +590,24 @@ static void setDisplayMetrics(JNIEnv *env, jclass /*clazz*/,
                                                   (qreal)scaledDensity,
                                                   (qreal)density);
     } else {
-        m_androidPlatformIntegration->setDisplayMetrics(displayId, cStrName,
-                                                        qRound(double(widthPixels)  / xdpi * 25.4),
-                                                        qRound(double(heightPixels) / ydpi * 25.4),
-                                                        (qreal)scaledDensity, (qreal)density);
+        QMetaObject::invokeMethod(m_androidPlatformIntegration, "setDisplayMetrics", Qt::QueuedConnection,
+                                  Q_ARG(int, displayId), Q_ARG(const QString, QString(cStrName)),
+                                  Q_ARG(int, qRound(double(widthPixels)  / xdpi * 25.4)),
+                                  Q_ARG(int, qRound(double(heightPixels) / ydpi * 25.4)),
+                                  Q_ARG(qreal, (qreal)scaledDensity),
+                                  Q_ARG(qreal, (qreal)density));
         m_androidPlatformIntegration->setScreenSize(displayId, widthPixels, heightPixels);
         m_androidPlatformIntegration->setDesktopSize(displayId, desktopWidthPixels, desktopHeightPixels);
     }
     env->ReleaseStringUTFChars(name, cStrName);
     cStrName = nullptr;
+}
+
+static void removeDisplay(JNIEnv */*env*/, jclass /*clazz*/,
+                          jint displayId)
+{
+    Q_ASSERT(m_androidPlatformIntegration != nullptr);
+    QMetaObject::invokeMethod(m_androidPlatformIntegration, "destroyScreen", Qt::QueuedConnection, Q_ARG(int, displayId));
 }
 
 static void updateWindow(JNIEnv */*env*/, jobject /*thiz*/)
@@ -715,6 +724,7 @@ static JNINativeMethod methods[] = {
     {"quitQtAndroidPlugin", "()V", (void *)quitQtAndroidPlugin},
     {"terminateQt", "()V", (void *)terminateQt},
     {"setDisplayMetrics", "(ILjava/lang/String;IIIIDDDD)V", (void *)setDisplayMetrics},
+    {"removeDisplay", "(I)V", (void *)removeDisplay},
     {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},

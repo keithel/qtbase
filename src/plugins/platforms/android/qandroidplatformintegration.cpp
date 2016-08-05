@@ -386,6 +386,13 @@ void QAndroidPlatformIntegration::setDisplayMetrics(int displayId, const QString
                                   Q_ARG(QSize, QSize(width, height)),
                                   Q_ARG(qreal, scaledDensity),
                                   Q_ARG(qreal, density));
+    } else {
+        // FIXME: This is ugly, only half-initializes the screen and assumes the caller will call setScreenSize and setDesktopSize
+        m_screens.insert(displayId,
+                new QAndroidPlatformScreen(displayId, name, QSize(width, height),
+                                           scaledDensity, density,
+                                           QSize(0, 0),
+                                           QRect(0, 0, 0, 0)));
     }
 }
 
@@ -394,6 +401,15 @@ void QAndroidPlatformIntegration::setScreenSize(int displayId, int width, int he
     QAndroidPlatformScreen* initialScreen = m_screens.value(displayId);
     if (initialScreen)
         QMetaObject::invokeMethod(initialScreen, "setSize", Qt::AutoConnection, Q_ARG(QSize, QSize(width, height)));
+}
+
+void QAndroidPlatformIntegration::destroyScreen(int displayId)
+{
+    qDebug() << "integration destroying screen " << displayId;
+    QAndroidPlatformScreen* screen = m_screens.value(displayId);
+    Q_ASSERT(screen != nullptr);
+    m_screens.remove(displayId);
+    QPlatformIntegration::destroyScreen(screen);
 }
 
 void QAndroidPlatformIntegration::screenAdded(QAndroidPlatformScreen *screen, bool isPrimary)

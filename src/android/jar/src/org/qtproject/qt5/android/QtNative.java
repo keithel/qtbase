@@ -64,6 +64,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import java.lang.reflect.Method;
 import java.security.KeyStore;
@@ -90,6 +91,7 @@ public class QtNative
     private static int m_oldx, m_oldy;
     private static final int m_moveThreshold = 0;
     private static DisplayManager m_displayManager = null;
+    private static DisplayManager.DisplayListener m_displayListener = null;
 
     private static ClipboardManager m_clipboardManager = null;
     private static Method m_checkSelfPermissionMethod = null;
@@ -216,6 +218,7 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             switch (state) {
                 case QtActivityDelegate.ApplicationActive:
+                    m_displayManager.registerDisplayListener(m_displayListener, null);
                     m_activityPaused = false;
                     Iterator<Runnable> itr = m_lostActions.iterator();
                     while (itr.hasNext())
@@ -224,6 +227,7 @@ public class QtNative
                     break;
                 default:
                     m_activityPaused = true;
+                    m_displayManager.unregisterDisplayListener(m_displayListener);
                     break;
             }
         }
@@ -276,8 +280,40 @@ public class QtNative
         boolean res = false;
         synchronized (m_mainActivityMutex) {
             res = startQtAndroidPlugin();
-            ContextWrapper context = m_activity != null ? m_activity : (m_service != null ? m_service : null);
+            final ContextWrapper context = m_activity != null ? m_activity : (m_service != null ? m_service : null);
+
             m_displayManager = (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
+            m_displayListener = new DisplayManager.DisplayListener()
+            {
+                // TODO: Tell Qt about added displays...
+                @Override
+                public void onDisplayAdded(int i)
+                {
+                    Toast.makeText(context, "Display " + i + " added", Toast.LENGTH_LONG).show();
+                    Display display = m_displayManager.getDisplay(i);
+                    // TODO: Provide better values for desktop width, height..
+                    setApplicationDisplayMetrics(display, m_startingDesktopWidth, m_startingDesktopHeight);
+                }
+
+                @Override
+                public void onDisplayRemoved(int i)
+                {
+                    removeDisplay(i);
+                    Toast.makeText(context, "Display " + i + " removed", Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onDisplayChanged(int i)
+                {
+                    Toast.makeText(context, "Display " + i + " changed", Toast.LENGTH_LONG).show();
+                    Display display = m_displayManager.getDisplay(i);
+                    setApplicationDisplayMetrics(display, m_startingDesktopWidth, m_startingDesktopHeight);
+                }
+            };
+
+            // Register display listener now because ApplicationActive state is already reached
+            // (onResume has already been called) at this point.
+            m_displayManager.registerDisplayListener(m_displayListener, null);
 
             for (Display display : m_displayManager.getDisplays()) {
                 DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -754,6 +790,7 @@ public class QtNative
                                                 double scaledDensity,
                                                 double density);
     public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
+    public static native void removeDisplay(int displayId);
     // screen methods
 
     // pointer methods

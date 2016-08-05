@@ -70,8 +70,9 @@ public:
     std::shared_ptr<AndroidStyle> m_androidStyle;
 };
 
-class QAndroidPlatformIntegration : public QPlatformIntegration
+class QAndroidPlatformIntegration : public QObject, public QPlatformIntegration
 {
+    Q_OBJECT
     friend class QAndroidPlatformScreen;
 
 public:
@@ -89,9 +90,6 @@ public:
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
 
     virtual void setDesktopSize(int displayId, int width, int height);
-    virtual void setDisplayMetrics(int displayId, const QString& name,
-                                   int width, int height,
-                                   qreal scaledDensity, qreal density);
     void setScreenSize(int displayId, int width, int height);
     bool isVirtualDesktop() { return true; }
 
@@ -127,6 +125,12 @@ public:
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
     static void setDefaultApplicationState(Qt::ApplicationState applicationState) { m_defaultApplicationState = applicationState; }
+
+public slots:
+    virtual void setDisplayMetrics(int displayId, const QString& name,
+                                   int width, int height,
+                                   qreal scaledDensity, qreal density);
+    void destroyScreen(int displayId);
 
 private:
     void screenAdded(QAndroidPlatformScreen *screen, bool isPrimary = false);
