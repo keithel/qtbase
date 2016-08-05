@@ -102,8 +102,6 @@ public class QtServiceDelegate
     private String m_mainLib;
     private static String m_environmentVariables = null;
     private static String m_applicationParameters = null;
-    private DisplayManager m_displayManager = null;
-    private DisplayManager.DisplayListener m_displayListener = null;
 
     public boolean loadApplication(Service service, ClassLoader classLoader, Bundle loaderParams)
     {
@@ -117,8 +115,8 @@ public class QtServiceDelegate
         QtNative.setService(m_service, this);
         QtNative.setClassLoader(classLoader);
 
-        m_displayManager = (DisplayManager)m_service.getSystemService(Context.DISPLAY_SERVICE);
-        QtNative.setApplicationDisplayMetrics(m_displayManager.getDisplay(0), 10, 10);
+        DisplayManager displayManager = (DisplayManager)m_service.getSystemService(Context.DISPLAY_SERVICE);
+        QtNative.setApplicationDisplayMetrics(displayManager.getDisplay(0), 10, 10);
 
         if (loaderParams.containsKey(STATIC_INIT_CLASSES_KEY)) {
             for (String className: loaderParams.getStringArray(STATIC_INIT_CLASSES_KEY)) {
@@ -171,8 +169,7 @@ public class QtServiceDelegate
             QtNative.startApplication(m_applicationParameters,
                     m_environmentVariables,
                     m_mainLib,
-                    nativeLibraryDir,
-                    m_displayManager.getDisplay(0));
+                    nativeLibraryDir);
             return true;
         } catch (Exception e) {
             e.printStackTrace();

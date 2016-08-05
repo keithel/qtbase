@@ -338,11 +338,13 @@ QPlatformTheme *QAndroidPlatformIntegration::createPlatformTheme(const QString &
     return 0;
 }
 
-void QAndroidPlatformIntegration::createScreen(int displayId, int gw, int gh, int sw, int sh, int screenWidth, int screenHeight,
+void QAndroidPlatformIntegration::createScreen(int displayId, const QString& name,
+                                               int gw, int gh, int sw, int sh,
+                                               int screenWidth, int screenHeight,
                                                qreal scaledDensity, qreal density)
 {
     s_screensAtStartup.insert(displayId,
-            new QAndroidPlatformScreen(displayId, "INTERNAL", QSize(sw, sh),
+            new QAndroidPlatformScreen(displayId, name, QSize(sw, sh),
                                        scaledDensity, density,
                                        QSize(screenWidth, screenHeight),
                                        QRect(0, 0, gw, gh)));
@@ -357,7 +359,7 @@ void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation cur
 
 qreal QAndroidPlatformIntegration::defaultDisplayPixelDensity()
 {
-    s_screensAtStartup.value(0)->pixelDensity();
+    return s_screensAtStartup.value(0)->pixelDensity();
 }
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -374,15 +376,17 @@ void QAndroidPlatformIntegration::setDesktopSize(int displayId, int width, int h
         QMetaObject::invokeMethod(initialScreen, "setAvailableGeometry", Qt::AutoConnection, Q_ARG(QRect, QRect(0,0,width, height)));
 }
 
-void QAndroidPlatformIntegration::setDisplayMetrics(int displayId, int width, int height,
+void QAndroidPlatformIntegration::setDisplayMetrics(int displayId, const QString& name,
+                                                    int width, int height,
                                                     qreal scaledDensity, qreal density)
 {
-    QAndroidPlatformScreen* initialScreen = m_screens.value(displayId);
-    if (initialScreen)
-        QMetaObject::invokeMethod(initialScreen, "setPhysicalSize", Qt::AutoConnection,
+    QAndroidPlatformScreen* screen = m_screens.value(displayId);
+    if (screen) {
+        QMetaObject::invokeMethod(screen, "setPhysicalSize", Qt::AutoConnection,
                                   Q_ARG(QSize, QSize(width, height)),
                                   Q_ARG(qreal, scaledDensity),
                                   Q_ARG(qreal, density));
+    }
 }
 
 void QAndroidPlatformIntegration::setScreenSize(int displayId, int width, int height)

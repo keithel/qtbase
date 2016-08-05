@@ -47,8 +47,10 @@ import java.util.concurrent.Semaphore;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.display.DisplayManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -87,6 +89,8 @@ public class QtNative
     private static int m_startingDesktopHeight = 0;
     private static int m_oldx, m_oldy;
     private static final int m_moveThreshold = 0;
+    private static DisplayManager m_displayManager = null;
+
     private static ClipboardManager m_clipboardManager = null;
     private static Method m_checkSelfPermissionMethod = null;
     private static final Runnable runPendingCppRunnablesRunnable = new Runnable() {
@@ -120,7 +124,6 @@ public class QtNative
             return m_service;
         }
     }
-
 
     public static QtActivityDelegate activityDelegate()
     {
@@ -261,8 +264,7 @@ public class QtNative
     public static boolean startApplication(String params,
                                            String environment,
                                            String mainLibrary,
-                                           String nativeLibraryDir,
-                                           Display startingDisplay) throws Exception
+                                           String nativeLibraryDir) throws Exception
     {
         File f = new File(nativeLibraryDir + "lib" + mainLibrary + ".so");
         if (!f.exists())
@@ -274,17 +276,23 @@ public class QtNative
         boolean res = false;
         synchronized (m_mainActivityMutex) {
             res = startQtAndroidPlugin();
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            startingDisplay.getMetrics(displayMetrics);
-            setDisplayMetrics(startingDisplay.getDisplayId(),
-                              displayMetrics.widthPixels,
-                              displayMetrics.heightPixels,
-                              m_startingDesktopWidth,
-                              m_startingDesktopHeight,
-                              displayMetrics.xdpi,
-                              displayMetrics.ydpi,
-                              displayMetrics.scaledDensity,
-                              displayMetrics.density);
+            ContextWrapper context = m_activity != null ? m_activity : (m_service != null ? m_service : null);
+            m_displayManager = (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
+
+            for (Display display : m_displayManager.getDisplays()) {
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                display.getMetrics(displayMetrics);
+                setDisplayMetrics(display.getDisplayId(),
+                                  display.getName(),
+                                  displayMetrics.widthPixels,
+                                  displayMetrics.heightPixels,
+                                  m_startingDesktopWidth,
+                                  m_startingDesktopHeight,
+                                  displayMetrics.xdpi,
+                                  displayMetrics.ydpi,
+                                  displayMetrics.scaledDensity,
+                                  displayMetrics.density);
+            }
             if (params.length() > 0 && !params.startsWith("\t"))
                 params = "\t" + params;
             startQtApplication(f.getAbsolutePath() + params, environment);
@@ -309,6 +317,7 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             if (m_started) {
                 setDisplayMetrics(display.getDisplayId(),
+                                  display.getName(),
                                   displayMetrics.widthPixels,
                                   displayMetrics.heightPixels,
                                   desktopWidthPixels,
@@ -735,6 +744,7 @@ public class QtNative
 
     // screen methods
     public static native void setDisplayMetrics(int displayId,
+                                                String name,
                                                 int screenWidthPixels,
                                                 int screenHeightPixels,
                                                 int desktopWidthPixels,

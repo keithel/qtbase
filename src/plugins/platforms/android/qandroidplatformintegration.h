@@ -89,7 +89,8 @@ public:
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const;
 
     virtual void setDesktopSize(int displayId, int width, int height);
-    virtual void setDisplayMetrics(int displayId, int width, int height,
+    virtual void setDisplayMetrics(int displayId, const QString& name,
+                                   int width, int height,
                                    qreal scaledDensity, qreal density);
     void setScreenSize(int displayId, int width, int height);
     bool isVirtualDesktop() { return true; }
@@ -114,7 +115,9 @@ public:
     QStringList themeNames() const;
     QPlatformTheme *createPlatformTheme(const QString &name) const;
 
-    static void createScreen(int displayId, int gw, int gh, int sw, int sh, int width, int height,
+    static void createScreen(int displayId, const QString& name,
+                             int gw, int gh, int sw, int sh,
+                             int screenWidth, int screenHeight,
                              qreal scaledDensity, qreal density);
     static void setScreenOrientation(Qt::ScreenOrientation currentOrientation,
                                      Qt::ScreenOrientation nativeOrientation);
