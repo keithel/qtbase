@@ -318,6 +318,7 @@ public class QtNative
             for (Display display : m_displayManager.getDisplays()) {
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 display.getMetrics(displayMetrics);
+                fixDisplayMetricsDpi(displayMetrics);
                 setDisplayMetrics(display.getDisplayId(),
                                   display.getName(),
                                   displayMetrics.widthPixels,
@@ -343,12 +344,7 @@ public class QtNative
     {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         display.getMetrics(displayMetrics);
-
-        /* Fix buggy dpi report */
-        if (displayMetrics.xdpi < android.util.DisplayMetrics.DENSITY_LOW)
-            displayMetrics.xdpi = android.util.DisplayMetrics.DENSITY_LOW;
-        if (displayMetrics.ydpi < android.util.DisplayMetrics.DENSITY_LOW)
-            displayMetrics.ydpi = android.util.DisplayMetrics.DENSITY_LOW;
+        fixDisplayMetricsDpi(displayMetrics);
 
         synchronized (m_mainActivityMutex) {
             if (m_started) {
@@ -367,6 +363,15 @@ public class QtNative
                 m_startingDesktopHeight = desktopHeightPixels;
             }
         }
+    }
+
+    private static void fixDisplayMetricsDpi(DisplayMetrics displayMetrics)
+    {
+        /* Fix buggy dpi report */
+        if (displayMetrics.xdpi < android.util.DisplayMetrics.DENSITY_LOW)
+            displayMetrics.xdpi = android.util.DisplayMetrics.DENSITY_LOW;
+        if (displayMetrics.ydpi < android.util.DisplayMetrics.DENSITY_LOW)
+            displayMetrics.ydpi = android.util.DisplayMetrics.DENSITY_LOW;
     }
 
 
