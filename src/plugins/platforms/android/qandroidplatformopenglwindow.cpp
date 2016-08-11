@@ -66,7 +66,7 @@ QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
     m_surfaceWaitCondition.wakeOne();
     lockSurface();
     if (m_nativeSurfaceId != -1)
-        QtAndroid::destroySurface(m_nativeSurfaceId);
+        QtAndroid::destroySurface(m_nativeSurfaceId, platformScreen()->displayId());
     clearEgl();
     unlockSurface();
 }
@@ -132,7 +132,8 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
             return m_eglSurface;
 
         const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
-        m_nativeSurfaceId = QtAndroid::createSurface(this, geometry(), windowStaysOnTop, 32);
+        int displayId = platformScreen()->displayId();
+        m_nativeSurfaceId = QtAndroid::createSurface(this, displayId, geometry(), windowStaysOnTop, 32);
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
@@ -165,7 +166,7 @@ void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState 
     if (state <=  Qt::ApplicationHidden) {
         lockSurface();
         if (m_nativeSurfaceId != -1) {
-            QtAndroid::destroySurface(m_nativeSurfaceId);
+            QtAndroid::destroySurface(m_nativeSurfaceId, platformScreen()->displayId());
             m_nativeSurfaceId = -1;
         }
         clearEgl();

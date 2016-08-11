@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qandroidplatformforeignwindow.h"
+#include "qandroidplatformscreen.h"
 #include "androidjnimain.h"
 #include <QtCore/qvariant.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -60,7 +61,7 @@ QAndroidPlatformForeignWindow::~QAndroidPlatformForeignWindow()
     if (m_view.isValid())
         QtAndroid::setViewVisibility(m_view.object(), false);
     if (m_surfaceId != -1)
-        QtAndroid::destroySurface(m_surfaceId);
+        QtAndroid::destroySurface(m_surfaceId, platformScreen()->displayId());
 }
 
 void QAndroidPlatformForeignWindow::lower()
@@ -98,7 +99,7 @@ void QAndroidPlatformForeignWindow::setVisible(bool visible)
 
     QAndroidPlatformWindow::setVisible(visible);
     if (!visible && m_surfaceId != -1) {
-        QtAndroid::destroySurface(m_surfaceId);
+        QtAndroid::destroySurface(m_surfaceId, platformScreen()->displayId());
         m_surfaceId = -1;
     } else if (m_surfaceId == -1) {
         m_surfaceId = QtAndroid::insertNativeView(m_view.object(), geometry());
@@ -109,7 +110,7 @@ void QAndroidPlatformForeignWindow::applicationStateChanged(Qt::ApplicationState
 {
     if (state <= Qt::ApplicationHidden
             && m_surfaceId != -1) {
-        QtAndroid::destroySurface(m_surfaceId);
+        QtAndroid::destroySurface(m_surfaceId, platformScreen()->displayId());
         m_surfaceId = -1;
     } else if (m_view.isValid() && m_surfaceId == -1){
         m_surfaceId = QtAndroid::insertNativeView(m_view.object(), geometry());

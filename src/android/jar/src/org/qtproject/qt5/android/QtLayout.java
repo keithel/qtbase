@@ -50,7 +50,12 @@ import android.view.ViewGroup;
 
 public class QtLayout extends ViewGroup
 {
-    private Runnable m_startApplicationRunnable;
+    private Runnable m_startApplicationRunnable = null;
+    public QtLayout(Context context)
+    {
+        super(context);
+    }
+
     public QtLayout(Context context, Runnable startRunnable)
     {
         super(context);

@@ -292,7 +292,7 @@ namespace QtAndroid
         return manufacturer + QLatin1Char(' ') + model;
     }
 
-    int createSurface(AndroidSurfaceClient *client, const QRect &geometry, bool onTop, int imageDepth)
+    int createSurface(AndroidSurfaceClient *client, int displayId, const QRect &geometry, bool onTop, int imageDepth)
     {
         QJNIEnvironmentPrivate env;
         if (!env)
@@ -313,6 +313,7 @@ namespace QtAndroid
         env->CallStaticVoidMethod(m_applicationClass,
                                      m_createSurfaceMethodID,
                                      surfaceId,
+                                     displayId,
                                      jboolean(onTop),
                                      x, y, w, h,
                                      imageDepth);
@@ -374,7 +375,7 @@ namespace QtAndroid
     }
 
 
-    void destroySurface(int surfaceId)
+    void destroySurface(int surfaceId, int displayId)
     {
         if (surfaceId == -1)
             return;
@@ -390,7 +391,8 @@ namespace QtAndroid
 
         env->CallStaticVoidMethod(m_applicationClass,
                                      m_destroySurfaceMethodID,
-                                     surfaceId);
+                                     surfaceId,
+                                     displayId);
     }
 
     void bringChildToFront(int surfaceId)
@@ -779,9 +781,9 @@ static int registerNatives(JNIEnv *env)
         return JNI_FALSE;
     }
 
-    GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IZIIIII)V");
+    GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IIZIIIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_setSurfaceGeometryMethodID, m_applicationClass, "setSurfaceGeometry", "(IIIII)V");
-    GET_AND_CHECK_STATIC_METHOD(m_destroySurfaceMethodID, m_applicationClass, "destroySurface", "(I)V");
+    GET_AND_CHECK_STATIC_METHOD(m_destroySurfaceMethodID, m_applicationClass, "destroySurface", "(II)V");
 
     jmethodID methodID;
     GET_AND_CHECK_STATIC_METHOD(methodID, m_applicationClass, "activity", "()Landroid/app/Activity;");

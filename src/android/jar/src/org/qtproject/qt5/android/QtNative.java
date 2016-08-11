@@ -696,13 +696,13 @@ public class QtNative
         return certificateArray;
     }
 
-    private static void createSurface(final int id, final boolean onTop, final int x, final int y, final int w, final int h, final int imageDepth)
+    private static void createSurface(final int id, final int displayId, final boolean onTop, final int x, final int y, final int w, final int h, final int imageDepth)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null)
-                    m_activityDelegate.createSurface(id, onTop, x, y, w, h, imageDepth);
+                    m_activityDelegate.createSurface(id, displayId, onTop, x, y, w, h, imageDepth);
             }
         });
     }
@@ -751,13 +751,13 @@ public class QtNative
         });
     }
 
-    private static void destroySurface(final int id)
+    private static void destroySurface(final int id, final int displayId)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null)
-                    m_activityDelegate.destroySurface(id);
+                    m_activityDelegate.destroySurface(id, displayId);
             }
         });
     }

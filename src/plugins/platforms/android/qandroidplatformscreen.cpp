@@ -99,7 +99,7 @@ QAndroidPlatformScreen::QAndroidPlatformScreen(int displayId, const QString& nam
 QAndroidPlatformScreen::~QAndroidPlatformScreen()
 {
     if (m_surfaceId != -1) {
-        QtAndroid::destroySurface(m_surfaceId);
+        QtAndroid::destroySurface(m_surfaceId, m_displayId);
         m_surfaceWaitCondition.wakeOne();
         releaseSurface();
     }
@@ -300,7 +300,7 @@ void QAndroidPlatformScreen::applicationStateChanged(Qt::ApplicationState state)
 
     if (state <=  Qt::ApplicationHidden) {
         lockSurface();
-        QtAndroid::destroySurface(m_surfaceId);
+        QtAndroid::destroySurface(m_surfaceId, m_displayId);
         m_surfaceId = -1;
         releaseSurface();
         unlockSurface();
@@ -346,14 +346,14 @@ void QAndroidPlatformScreen::doRedraw()
     }
     if (!hasVisibleRasterWindows) {
         if (m_surfaceId != -1) {
-            QtAndroid::destroySurface(m_surfaceId);
+            QtAndroid::destroySurface(m_surfaceId, m_displayId);
             m_surfaceId = -1;
         }
         return;
     }
     QMutexLocker lock(&m_surfaceMutex);
     if (m_surfaceId == -1 && m_rasterSurfaces) {
-        m_surfaceId = QtAndroid::createSurface(this, m_availableGeometry, true, m_depth);
+        m_surfaceId = QtAndroid::createSurface(this, m_displayId, m_availableGeometry, true, m_depth);
         AndroidDeadlockProtector protector;
         if (!protector.acquire())
             return;
