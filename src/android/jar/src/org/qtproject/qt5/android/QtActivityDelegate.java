@@ -72,6 +72,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
@@ -91,6 +92,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.qtproject.qt5.android.accessibility.QtAccessibilityDelegate;
 
@@ -1317,7 +1319,7 @@ public class QtActivityDelegate
 
         // Native views are always inserted in the end of the stack (i.e., on top).
         // All other views are stacked based on the order they are created.
-        final int surfaceCount = getSurfaceCount();
+        final int surfaceCount = getSurfaceCount(displayId);
         layout.addView(surface, surfaceCount);
 
         m_surfaces.put(id, surface);
@@ -1362,16 +1364,23 @@ public class QtActivityDelegate
         }
     }
 
-    public int getSurfaceCount()
+    public int getSurfaceCount(int displayId)
     {
-        return m_surfaces.size();
+        int surfaceCount = 0;
+        Iterator<QtSurface> it = m_surfaces.values().iterator();
+        while (it.hasNext()) {
+            SurfaceView surface = it.next();
+            if (surface.getDisplay().getDisplayId() == displayId)
+                surfaceCount++;
+        }
+        return surfaceCount;
     }
 
     public void bringChildToFront(int id)
     {
         View view = m_surfaces.get(id);
         if (view != null) {
-            final int surfaceCount = getSurfaceCount();
+            final int surfaceCount = getSurfaceCount(view.getDisplay().getDisplayId());
             if (surfaceCount > 0) {
                 QtLayout layout = m_layouts.get(view.getDisplay().getDisplayId());
                 layout.moveChild(view, surfaceCount - 1);
@@ -1397,7 +1406,7 @@ public class QtActivityDelegate
 
         view = m_nativeViews.get(id);
         if (view != null) {
-            final int index = getSurfaceCount();
+            final int index = getSurfaceCount(view.getDisplay().getDisplayId());
             QtLayout layout = m_layouts.get(view.getDisplay().getDisplayId());
             layout.moveChild(view, index);
         }

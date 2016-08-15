@@ -137,7 +137,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
                         // if all is fine, add it to the layout
                         if (m_view == null) {
                             //m_layout.addAccessibilityView(view);
-                            m_layout.addView(view, m_activityDelegate.getSurfaceCount(),
+                            m_layout.addView(view, m_activityDelegate.getSurfaceCount(view.getDisplay().getDisplayId()),
                                              new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                         }
                         m_view = view;
