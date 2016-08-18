@@ -320,7 +320,7 @@ namespace QtAndroid
         return surfaceId;
     }
 
-    int insertNativeView(jobject view, const QRect &geometry)
+    int insertNativeView(jobject view, int displayId, const QRect &geometry)
     {
         m_surfacesMutex.lock();
         const int surfaceId = m_surfaceId++;
@@ -333,8 +333,9 @@ namespace QtAndroid
 
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
                                                   "insertNativeView",
-                                                  "(ILandroid/view/View;IIII)V",
+                                                  "(IILandroid/view/View;IIII)V",
                                                   surfaceId,
+                                                  displayId,
                                                   view,
                                                   x,
                                                   y,

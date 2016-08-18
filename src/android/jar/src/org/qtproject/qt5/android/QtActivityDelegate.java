@@ -1296,9 +1296,8 @@ public class QtActivityDelegate
             m_activity.getActionBar().show();
     }
 
-    public void insertNativeView(int id, View view, int x, int y, int w, int h) {
-        // TODO: Support native views on external displays.
-        DisplaySurfaces displaySurfaces = m_displaySurfaces.get(0);
+    public void insertNativeView(int id, int displayId, View view, int x, int y, int w, int h) {
+        DisplaySurfaces displaySurfaces = m_displaySurfaces.get(displayId);
         QtLayout layout = displaySurfaces.layout();
         View dummyView = displaySurfaces.dummyView();
         if (dummyView != null) {

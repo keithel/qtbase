@@ -66,7 +66,7 @@ namespace QtAndroid
     void setQtThread(QThread *thread);
 
     int createSurface(AndroidSurfaceClient * client, int displayId, const QRect &geometry, bool onTop, int imageDepth);
-    int insertNativeView(jobject view, const QRect &geometry);
+    int insertNativeView(jobject view, int displayId, const QRect &geometry);
     void setViewVisibility(jobject view, bool visible);
     void setSurfaceGeometry(int surfaceId, int displayId, const QRect &geometry);
     void destroySurface(int surfaceId, int displayId);

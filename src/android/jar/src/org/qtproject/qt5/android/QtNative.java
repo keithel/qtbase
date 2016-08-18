@@ -707,13 +707,13 @@ public class QtNative
         });
     }
 
-    private static void insertNativeView(final int id, final View view, final int x, final int y, final int w, final int h)
+    private static void insertNativeView(final int id, final int displayId, final View view, final int x, final int y, final int w, final int h)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null)
-                    m_activityDelegate.insertNativeView(id, view, x, y, w, h);
+                    m_activityDelegate.insertNativeView(id, displayId, view, x, y, w, h);
             }
         });
     }
