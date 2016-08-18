@@ -353,7 +353,7 @@ namespace QtAndroid
                                                   visible);
     }
 
-    void setSurfaceGeometry(int surfaceId, const QRect &geometry)
+    void setSurfaceGeometry(int surfaceId, int displayId, const QRect &geometry)
     {
         if (surfaceId == -1)
             return;
@@ -371,6 +371,7 @@ namespace QtAndroid
         env->CallStaticVoidMethod(m_applicationClass,
                                      m_setSurfaceGeometryMethodID,
                                      surfaceId,
+                                     displayId,
                                      x, y, w, h);
     }
 
@@ -395,26 +396,26 @@ namespace QtAndroid
                                      displayId);
     }
 
-    void bringChildToFront(int surfaceId)
+    void bringChildToFront(int surfaceId, int displayId)
     {
         if (surfaceId == -1)
             return;
 
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
                                                   "bringChildToFront",
-                                                  "(I)V",
-                                                  surfaceId);
+                                                  "(II)V",
+                                                  surfaceId, displayId);
     }
 
-    void bringChildToBack(int surfaceId)
+    void bringChildToBack(int surfaceId, int displayId)
     {
         if (surfaceId == -1)
             return;
 
         QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass,
                                                   "bringChildToBack",
-                                                  "(I)V",
-                                                  surfaceId);
+                                                  "(II)V",
+                                                  surfaceId, displayId);
     }
 
     bool blockEventLoopsWhenSuspended()
@@ -782,7 +783,7 @@ static int registerNatives(JNIEnv *env)
     }
 
     GET_AND_CHECK_STATIC_METHOD(m_createSurfaceMethodID, m_applicationClass, "createSurface", "(IIZIIIII)V");
-    GET_AND_CHECK_STATIC_METHOD(m_setSurfaceGeometryMethodID, m_applicationClass, "setSurfaceGeometry", "(IIIII)V");
+    GET_AND_CHECK_STATIC_METHOD(m_setSurfaceGeometryMethodID, m_applicationClass, "setSurfaceGeometry", "(IIIIII)V");
     GET_AND_CHECK_STATIC_METHOD(m_destroySurfaceMethodID, m_applicationClass, "destroySurface", "(II)V");
 
     jmethodID methodID;

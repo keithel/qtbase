@@ -287,7 +287,7 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
 
         if (m_surfaceId != -1) {
             releaseSurface();
-            QtAndroid::setSurfaceGeometry(m_surfaceId, rect);
+            QtAndroid::setSurfaceGeometry(m_surfaceId, m_displayId, rect);
         }
     }
 }

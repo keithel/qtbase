@@ -718,35 +718,35 @@ public class QtNative
         });
     }
 
-    private static void setSurfaceGeometry(final int id, final int x, final int y, final int w, final int h)
+    private static void setSurfaceGeometry(final int id, final int displayId, final int x, final int y, final int w, final int h)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null)
-                    m_activityDelegate.setSurfaceGeometry(id, x, y, w, h);
+                    m_activityDelegate.setSurfaceGeometry(id, displayId, x, y, w, h);
             }
         });
     }
 
-    private static void bringChildToFront(final int id)
+    private static void bringChildToFront(final int id, final int displayId)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null)
-                    m_activityDelegate.bringChildToFront(id);
+                    m_activityDelegate.bringChildToFront(id, displayId);
             }
         });
     }
 
-    private static void bringChildToBack(final int id)
+    private static void bringChildToBack(final int id, final int displayId)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null)
-                    m_activityDelegate.bringChildToBack(id);
+                    m_activityDelegate.bringChildToBack(id, displayId);
             }
         });
     }

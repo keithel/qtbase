@@ -103,7 +103,7 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
 
     QAndroidPlatformWindow::setGeometry(rect);
     if (m_nativeSurfaceId != -1)
-        QtAndroid::setSurfaceGeometry(m_nativeSurfaceId, rect);
+        QtAndroid::setSurfaceGeometry(m_nativeSurfaceId, platformScreen()->displayId(), rect);
 
     QRect availableGeometry = screen()->availableGeometry();
     if (m_oldGeometry.width() == 0
@@ -132,8 +132,7 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
             return m_eglSurface;
 
         const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
-        int displayId = platformScreen()->displayId();
-        m_nativeSurfaceId = QtAndroid::createSurface(this, displayId, geometry(), windowStaysOnTop, 32);
+        m_nativeSurfaceId = QtAndroid::createSurface(this, platformScreen()->displayId(), geometry(), windowStaysOnTop, 32);
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 

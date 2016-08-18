@@ -70,7 +70,7 @@ void QAndroidPlatformForeignWindow::lower()
         return;
 
     QAndroidPlatformWindow::lower();
-    QtAndroid::bringChildToBack(m_surfaceId);
+    QtAndroid::bringChildToBack(m_surfaceId, platformScreen()->displayId());
 }
 
 void QAndroidPlatformForeignWindow::raise()
@@ -79,7 +79,7 @@ void QAndroidPlatformForeignWindow::raise()
         return;
 
     QAndroidPlatformWindow::raise();
-    QtAndroid::bringChildToFront(m_surfaceId);
+    QtAndroid::bringChildToFront(m_surfaceId, platformScreen()->displayId());
 }
 
 void QAndroidPlatformForeignWindow::setGeometry(const QRect &rect)
@@ -87,7 +87,7 @@ void QAndroidPlatformForeignWindow::setGeometry(const QRect &rect)
     QAndroidPlatformWindow::setGeometry(rect);
 
     if (m_surfaceId != -1)
-        QtAndroid::setSurfaceGeometry(m_surfaceId, rect);
+        QtAndroid::setSurfaceGeometry(m_surfaceId, platformScreen()->displayId(), rect);
 }
 
 void QAndroidPlatformForeignWindow::setVisible(bool visible)

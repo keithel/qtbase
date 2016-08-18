@@ -68,10 +68,10 @@ namespace QtAndroid
     int createSurface(AndroidSurfaceClient * client, int displayId, const QRect &geometry, bool onTop, int imageDepth);
     int insertNativeView(jobject view, const QRect &geometry);
     void setViewVisibility(jobject view, bool visible);
-    void setSurfaceGeometry(int surfaceId, const QRect &geometry);
+    void setSurfaceGeometry(int surfaceId, int displayId, const QRect &geometry);
     void destroySurface(int surfaceId, int displayId);
-    void bringChildToFront(int surfaceId);
-    void bringChildToBack(int surfaceId);
+    void bringChildToFront(int surfaceId, int displayId);
+    void bringChildToBack(int surfaceId, int displayId);
 
     QWindow *topLevelWindowAt(const QPoint &globalPos, int displayId);
     JavaVM *javaVM();
