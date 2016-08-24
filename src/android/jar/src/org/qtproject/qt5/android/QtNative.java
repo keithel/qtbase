@@ -227,7 +227,8 @@ public class QtNative
                     break;
                 default:
                     m_activityPaused = true;
-                    m_displayManager.unregisterDisplayListener(m_displayListener);
+                    if (m_displayManager != null && m_displayListener != null)
+                        m_displayManager.unregisterDisplayListener(m_displayListener);
                     break;
             }
         }
